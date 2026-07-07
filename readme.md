@@ -21,6 +21,7 @@
 - [Dashboard Preview](#-dashboard-preview)
 - [Business Questions Answered](#-business-questions-answered)
 - [Verification & Testing](#-verification--testing)
+- [Screenshots](#-screenshots)
 - [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -482,6 +483,77 @@ LEFT JOIN location_dim dl ON f.dropoff_location_id = dl.location_id;
 ```bash
 for i in {1..6}; do python verify-phase-$i.py; done
 ```
+
+---
+
+## 📸 Screenshots
+
+### Phase 0: Repository & Setup
+
+| Screenshot | Description |
+|------------|-------------|
+| ![GitHub Repository](screenshots/01-github-repo-created.png) | GitHub repository created |
+| ![Terminal Setup](screenshots/02-terminal-setup.png) | Terminal with venv active |
+
+### Phase 1: Environment Setup
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Folder Structure](screenshots/03-folder-structure.png) | Project folder structure |
+| ![Dataset Downloaded](screenshots/04-dataset-downloaded.png) | Dataset in data/ folder |
+| ![Phase 1 Verification](screenshots/05-verify-phase1-success.png) | Phase 1 verification passed (100%) |
+
+### Phase 2: Data Extraction
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Mage Dashboard](screenshots/06-mage-dashboard.png) | Mage AI UI dashboard |
+| ![Mage Loader Block](screenshots/07-mage-loader-block.png) | Data Loader block in Mage |
+| ![Loader Success](screenshots/08-mage-loader-success.png) | Loader block execution success |
+| ![Phase 2 Verification](screenshots/09-verify-phase2-success.png) | Phase 2 verification passed |
+
+### Phase 3: Data Transformation
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Transformer Block](screenshots/10-mage-transformer-block.png) | Transformer block in Mage |
+| ![Transformer Success](screenshots/11-mage-transformer-success.png) | Transformer block execution success |
+| ![Phase 3 Verification](screenshots/12-verify-phase3-success.png) | Phase 3 verification passed |
+
+### Phase 4: Data Loading
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Exporter Block](screenshots/13-mage-exporter-block.png) | Data Exporter block in Mage |
+| ![Exporter Success](screenshots/14-mage-exporter-success.png) | Exporter block execution success |
+| ![Pipeline Success](screenshots/15-mage-pipeline-success.png) | Full pipeline success (all green) |
+| ![Phase 4 Verification](screenshots/16-verify-phase4-success.png) | Phase 4 verification passed |
+| ![DuckDB Tables](screenshots/17-duckdb-tables.png) | DuckDB tables view |
+| ![DuckDB Data](screenshots/18-duckdb-data.png) | DuckDB sample data |
+
+### Phase 5: Dashboard Development
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Dashboard Code](screenshots/19-dashboard-code.png) | Dashboard application code |
+| ![Dashboard Overview](screenshots/20-dashboard-overview.png) | Dashboard overview |
+| ![Dashboard Filters](screenshots/21-dashboard-filters.png) | Sidebar filters |
+| ![Dashboard Charts](screenshots/22-dashboard-charts.png) | All interactive charts |
+| ![Dashboard KPI](screenshots/23-dashboard-kpi.png) | KPI cards |
+| ![Dashboard with Filter](screenshots/24-dashboard-with-filter.png) | Dashboard with filter applied |
+| ![Phase 5 Verification](screenshots/25-verify-phase5-success.png) | Phase 5 verification passed |
+
+### Phase 6: Deployment
+
+| Screenshot | Description |
+|------------|-------------|
+| ![README Overview](screenshots/26-readme-overview.png) | README.md overview |
+| ![Screenshots Folder](screenshots/27-screenshots-folder.png) | Screenshots folder |
+| ![Phase 6 Verification](screenshots/28-verify-phase6-success.png) | Phase 6 verification passed |
+| ![Git Commit](screenshots/29-git-commit.png) | Git commit |
+| ![Git Push](screenshots/30-git-push.png) | Git push |
+| ![GitHub Repo Final](screenshots/31-github-repo-final.png) | Final GitHub repository |
+| ![README Rendered](screenshots/32-readme-rendered.png) | README.md rendered on GitHub |
 
 ---
 
