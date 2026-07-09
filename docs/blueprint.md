@@ -1,119 +1,92 @@
-# 🚖 Uber ETL Pipeline Project
+# 📘 UBER ETL PIPELINE - TECHNICAL BLUEPRINT
 
-## 📘 Complete Blueprint
+## Document Information
 
----
-
-## 🎯 Project Overview
-
-### Tujuan
-Membangun **end-to-end data pipeline** untuk menganalisis data perjalanan Uber/Taxi NYC menggunakan **stack open-source** yang berjalan sepenuhnya di laptop Anda.
-
-### Output Akhir
-1. ✅ **Pipeline data** yang terstruktur dan dapat diaudit
-2. ✅ **Star Schema** (tabel fakta + dimensi) di DuckDB
-3. ✅ **Dashboard interaktif** dengan Streamlit + Plotly
-4. ✅ **6 phase verification** dengan 115+ automated checks
-
-### Business Questions yang Dijawab
-- Jam berapa permintaan ride paling tinggi?
-- Bagaimana pola revenue berdasarkan hari?
-- Rate code apa yang paling sering digunakan?
-- Berapa rata-rata jarak dan revenue per trip?
+| Property | Value |
+|----------|-------|
+| **Version** | 2.0.0 |
+| **Last Updated** | 2026-07-10 |
+| **Status** | Production Ready |
+| **Orchestration** | Apache Airflow 2.7.3 |
+| **Database** | DuckDB 0.9.2 |
+| **Dashboard** | Streamlit 1.29.0 |
 
 ---
 
-## 🏗️ Arsitektur
+## 🎯 Project Objectives
 
-### Flow Diagram
+### Core Goals
+1. Build **end-to-end data pipeline** for NYC Uber/Taxi trip data
+2. Implement **Star Schema** in DuckDB for analytical queries
+3. Create **interactive dashboard** with Streamlit + Plotly
+4. Use **industry-standard tools** (Apache Airflow, Docker)
+5. Provide **comprehensive verification** across 6 phases
+
+### Success Metrics
+- ✅ 52+ automated verification checks
+- ✅ 100% data quality validation
+- ✅ 32+ documentation screenshots
+- ✅ < 5 minutes pipeline execution time (100,000 rows)
+
+---
+
+## 🏗️ System Architecture
+
+### Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                       UBER ETL PIPELINE                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐       │
-│  │   EXTRACT    │   │  TRANSFORM   │   │    LOAD      │       │
-│  │              │   │              │   │              │       │
-│  │  Data Loader │──▶│ Transformer  │──▶│ Data Exporter│       │
-│  │  (Mage AI)   │   │  (Mage AI)   │   │  (Mage AI)   │       │
-│  └──────────────┘   └──────────────┘   └──────────────┘       │
-│         │                  │                  │                │
-│         ▼                  ▼                  ▼                │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐       │
-│  │  Raw CSV     │   │ Star Schema  │   │   DuckDB     │       │
-│  │  Dataset     │   │  (4 Tables)  │   │  Warehouse   │       │
-│  └──────────────┘   └──────────────┘   └──────────────┘       │
-│                                                  │             │
-│                                                  ▼             │
-│                                         ┌──────────────┐       │
-│                                         │  Streamlit   │       │
-│                                         │  Dashboard   │       │
-│                                         └──────────────┘       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    DOCKER CONTAINER ENVIRONMENT                    │
+│  ┌───────────────────────────────────────────────────────────────┐ │
+│  │                    APACHE AIRFLOW (2.7.3)                    │ │
+│  │                                                              │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │ │
+│  │  │   EXTRACT    │  │  TRANSFORM   │  │    LOAD      │      │ │
+│  │  │              │  │              │  │              │      │ │
+│  │  │ extract.py   │─▶│ transform.py │─▶│   load.py    │      │ │
+│  │  │  (Python)    │  │  (Python)    │  │  (Python)    │      │ │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘      │ │
+│  │         │                 │                 │                │ │
+│  └─────────│─────────────────│─────────────────│────────────────┘ │
+│            │                 │                 │                  │
+│            ▼                 ▼                 ▼                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  Raw CSV     │  │ Star Schema  │  │   DuckDB     │           │
+│  │  Dataset     │  │  (4 Tables)  │  │  Warehouse   │           │
+│  │  (100K rows) │  │              │  │              │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│                                                      │             │
+│                                                      ▼             │
+│                                             ┌──────────────┐       │
+│                                             │  Streamlit   │       │
+│                                             │  Dashboard   │       │
+│                                             │  (Port 8501) │       │
+│                                             └──────────────┘       │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │                    POSTGRESQL (Metadata DB)                  │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+### Technology Stack
+
+| Layer | Technology | Version | Justification |
+|-------|-----------|---------|---------------|
+| **Orchestration** | Apache Airflow | 2.7.3 | Industry standard, widely adopted |
+| **Containerization** | Docker | Latest | Reproducible environment |
+| **Metadata DB** | PostgreSQL | 13 | Airflow's recommended backend |
+| **Data Warehouse** | DuckDB | 0.9.2 | Lightweight OLAP, embedded |
+| **Dashboard** | Streamlit | 1.29.0 | Python-native, rapid development |
+| **Visualization** | Plotly | 5.18.0 | Interactive charts, Python-friendly |
+| **Data Processing** | Pandas | 2.1.4 | Industry standard for data manipulation |
 
 ---
 
-## 🛠️ Tech Stack
+## 📊 Data Model Design
 
-| Komponen | Teknologi | Versi | Fungsi |
-|----------|-----------|-------|--------|
-| **Orchestration** | Mage AI | 0.9.70 | Pipeline orchestrator dengan blok modular |
-| **Data Warehouse** | DuckDB | 0.9.2 | In-process OLAP database |
-| **Dashboard** | Streamlit | 1.29.0 | Interactive web app |
-| **Visualization** | Plotly | 5.18.0 | Interactive charts |
-| **Data Processing** | Pandas | 2.1.4 | Data manipulation |
-| **Language** | Python | 3.10+ | Primary language |
-
----
-
-## 🗂️ Project Structure
-
-```
-uber-data-pipeline/
-│
-├── 📁 dashboard/
-│   └── app.py                         # Streamlit dashboard
-│
-├── 📁 data/
-│   └── uber_data.csv                  # Raw dataset
-│
-├── 📁 warehouse/
-│   └── uber.duckdb                    # DuckDB database
-│
-├── 📁 mage_project/
-│   ├── metadata.yaml                  # Mage configuration
-│   └── pipelines/
-│       └── uber_etl_pipeline/
-│           ├── pipeline.yaml
-│           └── blocks/
-│               ├── load_data.py       # Data Loader (Extract)
-│               ├── create_star_schema.py  # Transformer
-│               └── load_to_duckdb.py      # Data Exporter (Load)
-│
-├── 📁 screenshots/
-│   └── (32+ screenshots)
-│
-├── 📄 verify-phase-1.py               # Phase 1: Setup
-├── 📄 verify-phase-2.py               # Phase 2: Extract
-├── 📄 verify-phase-3.py               # Phase 3: Transform
-├── 📄 verify-phase-4.py               # Phase 4: Load
-├── 📄 verify-phase-5.py               # Phase 5: Dashboard
-├── 📄 verify-phase-6.py               # Phase 6: Deploy
-│
-├── 📄 requirements.txt                # Python dependencies
-├── 📄 .gitignore                      # Git ignore
-├── 📄 LICENSE                         # MIT License
-└── 📄 README.md                       # Documentation
-```
-
----
-
-## 📊 Star Schema Design
-
-### Diagram
+### Star Schema Diagram
 
 ```
 ┌─────────────────────┐          ┌─────────────────────────┐
@@ -136,8 +109,11 @@ uber-data-pipeline/
                                    │ pickup_location_id (FK)      │ │
                                    │ dropoff_location_id (FK)     │ │
                                    │ trip_distance                │ │
+                                   │ trip_duration                │ │
                                    │ fare_amount                  │ │
                                    │ total_amount                 │ │
+                                   │ passenger_count              │ │
+                                   │ payment_type_id              │ │
                                    └──────────────────────────────┘ │
                               ┌─────────────────────────┐          │
                               │     location_dim        │          │
@@ -148,265 +124,278 @@ uber-data-pipeline/
                               └─────────────────────────┘
 ```
 
-### Tabel
+### Table Definitions
 
-#### 1. datetime_dim (Dimension Table)
+#### fact_table (Fact Table)
+| Column | Type | Nullable | Description | Source |
+|--------|------|----------|-------------|--------|
+| trip_id | INTEGER | NOT NULL | Surrogate key | Auto-increment |
+| datetime_id | INTEGER | NOT NULL | FK to datetime_dim | Join on pickup |
+| rate_code_id | INTEGER | NOT NULL | FK to rate_code_dim | RatecodeID |
+| pickup_location_id | INTEGER | NOT NULL | FK to location_dim | Coordinates |
+| dropoff_location_id | INTEGER | NOT NULL | FK to location_dim | Coordinates |
+| trip_distance | FLOAT | NULL | Distance in miles | trip_distance |
+| trip_duration | FLOAT | NULL | Duration in minutes | Calculated |
+| fare_amount | FLOAT | NULL | Fare amount | fare_amount |
+| total_amount | FLOAT | NULL | Total with tips/tolls | total_amount |
+| passenger_count | INTEGER | NULL | Number of passengers | passenger_count |
+| payment_type_id | INTEGER | NULL | Payment type code | payment_type |
+
+#### datetime_dim (Dimension)
 | Column | Type | Description |
 |--------|------|-------------|
-| `datetime_id` | INTEGER | Primary Key |
-| `pickup_datetime` | TIMESTAMP | Waktu pickup |
-| `pick_hour` | INTEGER | Jam (0-23) |
-| `pick_day` | INTEGER | Tanggal (1-31) |
-| `pick_month` | INTEGER | Bulan (1-12) |
-| `pick_year` | INTEGER | Tahun |
-| `pick_weekday` | VARCHAR | Nama hari (Monday-Sunday) |
+| datetime_id | INTEGER | Surrogate key |
+| pickup_datetime | TIMESTAMP | Original timestamp |
+| pick_hour | INTEGER | 0-23 |
+| pick_day | INTEGER | 1-31 |
+| pick_month | INTEGER | 1-12 |
+| pick_year | INTEGER | YYYY |
+| pick_weekday | VARCHAR | Monday-Sunday |
 
-#### 2. rate_code_dim (Dimension Table)
+#### rate_code_dim (Dimension)
 | Column | Type | Description |
 |--------|------|-------------|
-| `rate_code_id` | INTEGER | Primary Key |
-| `RatecodeID` | INTEGER | Rate code ID from dataset |
-| `rate_code_name` | VARCHAR | Name mapping (Standard, JFK, Newark, etc.) |
+| rate_code_id | INTEGER | Surrogate key |
+| RatecodeID | INTEGER | Source code (1-6) |
+| rate_code_name | VARCHAR | Human-readable name |
 
-#### 3. location_dim (Dimension Table)
+**Rate Code Mapping:**
+| RatecodeID | Name |
+|------------|------|
+| 1 | Standard |
+| 2 | JFK |
+| 3 | Newark |
+| 4 | Nassau/Westchester |
+| 5 | Negotiated |
+| 6 | Group Ride |
+
+#### location_dim (Dimension)
 | Column | Type | Description |
 |--------|------|-------------|
-| `location_id` | INTEGER | Primary Key |
-| `location_name` | VARCHAR | Nama zona |
-| `borough` | VARCHAR | Borough (NYC) |
-
-#### 4. fact_table (Fact Table)
-| Column | Type | Description |
-|--------|------|-------------|
-| `trip_id` | INTEGER | Primary Key |
-| `datetime_id` | INTEGER | FK → datetime_dim |
-| `rate_code_id` | INTEGER | FK → rate_code_dim |
-| `pickup_location_id` | INTEGER | FK → location_dim |
-| `dropoff_location_id` | INTEGER | FK → location_dim |
-| `trip_distance` | FLOAT | Jarak perjalanan (miles) |
-| `trip_duration` | FLOAT | Durasi perjalanan (minutes) |
-| `fare_amount` | FLOAT | Biaya perjalanan |
-| `total_amount` | FLOAT | Total biaya (with tips, tolls, etc.) |
-| `passenger_count` | INTEGER | Jumlah penumpang |
-| `payment_type_id` | INTEGER | Tipe pembayaran |
+| location_id | INTEGER | Surrogate key |
+| location_name | VARCHAR | Display name |
+| borough | VARCHAR | NYC borough |
 
 ---
 
-## 📋 6 Phases Implementasi
+## 📁 Project Structure
 
-### Phase 1: Setup & Environment
-**Tujuan:** Menyiapkan fondasi proyek
-
-| # | Task | Detail |
-|---|------|--------|
-| 1.1 | Folder structure | `data/`, `warehouse/`, `dashboard/`, `mage_project/` |
-| 1.2 | Virtual environment | `python -m venv venv` |
-| 1.3 | Requirements | `mage-ai`, `duckdb`, `pandas`, `streamlit`, `plotly` |
-| 1.4 | Dataset | Download `uber_data.csv` ke `data/` |
-| 1.5 | Verification | `python verify-phase-1.py` |
-
-**Verification Checks:** 14 checks
-
----
-
-### Phase 2: Data Loading (Extract)
-**Tujuan:** Load data CSV ke Mage
-
-| # | Task | Detail |
-|---|------|--------|
-| 2.1 | Start Mage | `mage start mage_project` |
-| 2.2 | Create pipeline | `uber_etl_pipeline` (Standard batch) |
-| 2.3 | Data Loader block | Name: `load_data` |
-| 2.4 | Code validation | `@data_loader`, pandas, `pd.read_csv()`, `return df` |
-| 2.5 | Run block | Test execution |
-| 2.6 | Verification | `python verify-phase-2.py` |
-
-**Verification Checks:** 12 checks
-
----
-
-### Phase 3: Data Transformation (Transform)
-**Tujuan:** Membangun Star Schema
-
-| # | Task | Detail |
-|---|------|--------|
-| 3.1 | Transformer block | Name: `create_star_schema` |
-| 3.2 | Data cleaning | `drop_duplicates()`, `dropna()`, `reset_index()` |
-| 3.3 | Build `datetime_dim` | `datetime_id`, `pick_hour`, `pick_day`, `pick_month`, `pick_year`, `pick_weekday` |
-| 3.4 | Build `rate_code_dim` | `rate_code_id`, `RatecodeID`, `rate_code_name` |
-| 3.5 | Build `location_dim` | `location_id`, `location_name`, `borough` |
-| 3.6 | Build `fact_table` | `trip_id`, `datetime_id`, `rate_code_id`, `pickup_location_id`, `dropoff_location_id`, `trip_distance`, `fare_amount`, `total_amount` |
-| 3.7 | Return dictionary | `{'datetime_dim': ..., 'rate_code_dim': ..., 'location_dim': ..., 'fact_table': ...}` |
-| 3.8 | Verification | `python verify-phase-3.py` |
-
-**Verification Checks:** 32 checks
-
----
-
-### Phase 4: Data Loading to DuckDB (Load)
-**Tujuan:** Simpan data ke DuckDB
-
-| # | Task | Detail |
-|---|------|--------|
-| 4.1 | Data Exporter block | Name: `load_to_duckdb` |
-| 4.2 | Import DuckDB | `import duckdb` |
-| 4.3 | Connect to DB | `duckdb.connect('warehouse/uber.duckdb')` |
-| 4.4 | Drop & Create tables | `DROP TABLE IF EXISTS`, `CREATE TABLE` |
-| 4.5 | Loop tables | `for table_name, df in data.items()` |
-| 4.6 | Create view | `trip_analytics` |
-| 4.7 | Run pipeline | All 3 blocks |
-| 4.8 | Verification | `python verify-phase-4.py` |
-
-**Verification Checks:** 15 checks
-
----
-
-### Phase 5: Dashboard Development
-**Tujuan:** Visualisasi data interaktif
-
-| # | Task | Detail |
-|---|------|--------|
-| 5.1 | Create `dashboard/app.py` | Streamlit application |
-| 5.2 | Import libraries | `streamlit`, `duckdb`, `pandas`, `plotly` |
-| 5.3 | Database connection | `@st.cache_resource` |
-| 5.4 | Data loading | `@st.cache_data` |
-| 5.5 | KPI Cards | Total Trips, Revenue, Avg Distance, Avg Fare |
-| 5.6 | Line Chart | Revenue per Hour |
-| 5.7 | Bar Chart | Trips by Weekday |
-| 5.8 | Pie Chart | Rate Code Distribution |
-| 5.9 | Scatter Plot | Distance vs Fare |
-| 5.10 | Sidebar filters | Year, Month, Weekday |
-| 5.11 | Data table | `st.dataframe()` |
-| 5.12 | Run dashboard | `streamlit run dashboard/app.py` |
-| 5.13 | Verification | `python verify-phase-5.py` |
-
-**Verification Checks:** 23 checks
-
----
-
-### Phase 6: Deployment & Documentation
-**Tujuan:** Finalisasi proyek
-
-| # | Task | Detail |
-|---|------|--------|
-| 6.1 | README.md | Project overview, tech stack, setup, pipeline, dashboard, screenshots |
-| 6.2 | Screenshots | 32+ screenshots in `screenshots/` folder |
-| 6.3 | Git init | `git init` |
-| 6.4 | GitHub repo | Create public repository |
-| 6.5 | Push | `git push origin main` |
-| 6.6 | Verification | `python verify-phase-6.py` |
-
-**Verification Checks:** 19 checks
-
----
-
-## ✅ Verification Summary
-
-| Phase | Script | Checks | Focus |
-|-------|--------|--------|-------|
-| **1** | `verify-phase-1.py` | 14 | Setup & Environment |
-| **2** | `verify-phase-2.py` | 12 | Data Loading (Extract) |
-| **3** | `verify-phase-3.py` | 32 | Data Transformation (Star Schema) |
-| **4** | `verify-phase-4.py` | 15 | Data Loading to DuckDB |
-| **5** | `verify-phase-5.py` | 23 | Dashboard Development |
-| **6** | `verify-phase-6.py` | 19 | Deployment & Documentation |
-| **TOTAL** | | **115** | **All Phases** |
-
----
-
-## 🚀 Quick Start Commands
-
-```bash
-# 1. Clone
-git clone https://github.com/yourusername/uber-data-pipeline.git
-cd uber-data-pipeline
-
-# 2. Setup
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# 3. Start Mage
-mage start mage_project
-
-# 4. Create pipeline in Mage UI (http://localhost:6789)
-# - Pipeline: uber_etl_pipeline
-# - 3 blocks: Data Loader, Transformer, Data Exporter
-
-# 5. Run verifications
-python verify-phase-1.py
-python verify-phase-2.py
-python verify-phase-3.py
-python verify-phase-4.py
-python verify-phase-5.py
-python verify-phase-6.py
-
-# 6. Run dashboard
-streamlit run dashboard/app.py
-
-# 7. Push to GitHub
-git add .
-git commit -m "Complete Uber ETL Pipeline Project"
-git push origin main
+```
+uber-data-pipeline/
+│
+├── 📁 dags/                              # Airflow DAGs
+│   └── uber_etl_dag.py                   # Main DAG definition
+│
+├── 📁 scripts/                           # Python scripts
+│   ├── extract.py                        # Extract data from CSV
+│   ├── transform.py                      # Transform to Star Schema
+│   └── load.py                           # Load to DuckDB
+│
+├── 📁 data/                              # Raw data
+│   └── uber_data.csv                     # NYC Uber/Taxi dataset
+│
+├── 📁 warehouse/                         # Data warehouse
+│   └── uber.duckdb                       # DuckDB database
+│
+├── 📁 dashboard/                         # Streamlit dashboard
+│   └── app.py                            # Dashboard application
+│
+├── 📁 screenshots/                       # Documentation
+│   └── (32+ screenshots)
+│
+├── 📄 docker-compose.yml                 # Docker Compose for Airflow
+├── 📄 requirements.txt                   # Python dependencies
+├── 📄 .gitignore                         # Git ignore file
+├── 📄 LICENSE                            # MIT License
+├── 📄 README.md                          # Project documentation
+├── 📄 blueprint.md                       # This file
+│
+├── 📄 verify-phase-1.py                  # Phase 1: Setup
+├── 📄 verify-phase-2.py                  # Phase 2: DAG Creation
+├── 📄 verify-phase-3.py                  # Phase 3: Transform
+├── 📄 verify-phase-4.py                  # Phase 4: Load
+├── 📄 verify-phase-5.py                  # Phase 5: Dashboard
+├── 📄 verify-phase-6.py                  # Phase 6: Deployment
+│
+├── 📄 setup_project.py                   # Project setup script
+├── 📄 setup_pipeline.py                  # Pipeline setup script
+└── 📄 structure.py                       # Display project structure
 ```
 
 ---
 
-## 📸 Screenshots Checklist
+## 📋 Implementation Details
 
-| Phase | Screenshot | Description |
-|-------|------------|-------------|
-| 0 | `01-github-repo-created.png` | GitHub repository created |
-| 0 | `02-terminal-setup.png` | Terminal with venv active |
-| 1 | `03-folder-structure.png` | Folder structure |
-| 1 | `04-dataset-downloaded.png` | Dataset in data/ folder |
-| 1 | `05-verify-phase1-success.png` | Phase 1 verification passed |
-| 2 | `06-mage-dashboard.png` | Mage UI dashboard |
-| 2 | `07-mage-loader-block.png` | Data Loader block |
-| 2 | `08-mage-loader-success.png` | Loader block success |
-| 2 | `09-verify-phase2-success.png` | Phase 2 verification passed |
-| 3 | `10-mage-transformer-block.png` | Transformer block |
-| 3 | `11-mage-transformer-success.png` | Transformer block success |
-| 3 | `12-verify-phase3-success.png` | Phase 3 verification passed |
-| 4 | `13-mage-exporter-block.png` | Data Exporter block |
-| 4 | `14-mage-exporter-success.png` | Exporter block success |
-| 4 | `15-mage-pipeline-success.png` | Full pipeline success |
-| 4 | `16-verify-phase4-success.png` | Phase 4 verification passed |
-| 4 | `17-duckdb-tables.png` | DuckDB tables view |
-| 4 | `18-duckdb-data.png` | DuckDB sample data |
-| 5 | `19-dashboard-code.png` | Dashboard code |
-| 5 | `20-dashboard-overview.png` | Dashboard overview |
-| 5 | `21-dashboard-filters.png` | Sidebar filters |
-| 5 | `22-dashboard-charts.png` | All charts |
-| 5 | `23-dashboard-kpi.png` | KPI cards |
-| 5 | `24-dashboard-with-filter.png` | Dashboard with filter |
-| 5 | `25-verify-phase5-success.png` | Phase 5 verification passed |
-| 6 | `26-readme-overview.png` | README.md overview |
-| 6 | `27-screenshots-folder.png` | Screenshots folder |
-| 6 | `28-verify-phase6-success.png` | Phase 6 verification passed |
-| 7 | `29-git-commit.png` | Git commit |
-| 7 | `30-git-push.png` | Git push |
-| 7 | `31-github-repo-final.png` | Final GitHub repository |
-| 7 | `32-readme-rendered.png` | README.md rendered |
+### DAG Configuration
 
----
+```python
+# dags/uber_etl_dag.py
 
-## 🔧 Troubleshooting
+DAG_ID = 'uber_etl_pipeline'
+SCHEDULE_INTERVAL = '@daily'
+START_DATE = datetime(2026, 1, 1)
+CATCHUP = False
+RETRIES = 1
+RETRY_DELAY = timedelta(minutes=5)
+```
 
-### Common Issues
+### Task Dependencies
 
-| Issue | Solution |
-|-------|----------|
-| `ModuleNotFoundError` | `pip install -r requirements.txt --upgrade` |
-| Database connection error | Check if `warehouse/uber.duckdb` exists |
-| Mage server won't start | Check if port 6789 is available |
-| Dashboard not loading | `pip install streamlit --upgrade` |
-| Verification fails | Run setup script first |
+```python
+start >> extract_data >> transform_data >> load_data >> end
+```
+
+### Docker Configuration
+
+```yaml
+# docker-compose.yml
+
+Services:
+  - postgres:13        # Metadata database
+  - redis:latest       # Celery broker
+  - airflow-webserver   # Airflow UI
+  - airflow-scheduler   # Task scheduler
+
+Ports:
+  - 8080:8080          # Airflow UI
+  - 5432:5432          # PostgreSQL
+  - 6379:6379          # Redis
+
+Volumes:
+  - ./dags:/opt/airflow/dags
+  - ./scripts:/opt/airflow/scripts
+  - ./data:/opt/airflow/data
+  - ./warehouse:/opt/airflow/warehouse
+```
 
 ---
 
-## 📝 License
+## ✅ Verification System
 
-This project is licensed under the MIT License.
+### Verification Summary
+
+| Phase | Script | Checks | Focus |
+|-------|--------|--------|-------|
+| **1** | `verify-phase-1.py` | 20 | Setup & Environment |
+| **2** | `verify-phase-2.py` | 9 | Airflow DAG Creation |
+| **3** | `verify-phase-3.py` | 6 | Data Transformation |
+| **4** | `verify-phase-4.py` | 4 | Data Loading |
+| **5** | `verify-phase-5.py` | 6 | Dashboard Development |
+| **6** | `verify-phase-6.py` | 7 | Deployment & Documentation |
+| **TOTAL** | | **52** | **All Phases** |
+
+### Verification Outputs
+- `phaseX_verification.json` - Machine-readable results
+- `phaseX_verification_report.txt` - Human-readable summary
 
 ---
+
+## 🚀 Deployment Guide
+
+### Prerequisites
+
+| Item | Version | Check Command |
+|------|---------|---------------|
+| Python | 3.10+ | `python --version` |
+| Docker | Latest | `docker --version` |
+| Docker Compose | Latest | `docker-compose --version` |
+| Git | Latest | `git --version` |
+
+### Deployment Steps
+
+```bash
+# 1. Clone repository
+git clone https://github.com/ArkanTsabit123/uber-data-pipeline.git
+cd uber-data-pipeline
+
+# 2. Setup virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Setup project structure
+python setup_project.py
+python setup_pipeline.py
+
+# 5. Start Airflow
+docker-compose up -d
+
+# 6. Verify deployment
+python verify-phase-1.py
+
+# 7. Open Airflow UI
+# http://localhost:8080 (admin/admin)
+
+# 8. Trigger DAG
+# Click "Trigger DAG" on uber_etl_pipeline
+
+# 9. Launch Dashboard
+streamlit run dashboard/app.py
+```
+
+---
+
+## 📊 Performance Specifications
+
+### Data Volume
+| Metric | Value |
+|--------|-------|
+| Input Size | ~15 MB |
+| Rows | 100,000 |
+| Columns | 19 |
+| Database Size | ~10 MB |
+
+### Execution Time
+| Task | Time |
+|------|------|
+| Extract | ~1 second |
+| Transform | ~3 seconds |
+| Load | ~1 second |
+| **Total** | **~5 seconds** |
+
+---
+
+## 🔐 Security Considerations
+
+### Default Credentials (Change for Production)
+
+| Service | Username | Password |
+|---------|----------|----------|
+| Airflow UI | admin | admin |
+| PostgreSQL | airflow | airflow |
+
+### Network Ports
+| Port | Service | Exposure |
+|------|---------|----------|
+| 8080 | Airflow UI | Localhost |
+| 5432 | PostgreSQL | Localhost |
+| 6379 | Redis | Localhost |
+| 8501 | Dashboard | Localhost |
+
+---
+
+## 📝 Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 2.0.0 | 2026-07-10 | Migrated from Mage AI to Airflow |
+| 1.0.0 | 2026-07-08 | Initial release with Mage AI |
+
+---
+
+## 🔗 Quick Links
+
+| Resource | URL |
+|----------|-----|
+| **Airflow UI** | http://localhost:8080 |
+| **Dashboard** | http://localhost:8501 |
+| **GitHub** | https://github.com/ArkanTsabit123/uber-data-pipeline |
+| **Airflow Docs** | https://airflow.apache.org/docs/ |
+| **DuckDB Docs** | https://duckdb.org/docs/ |
+| **Streamlit Docs** | https://docs.streamlit.io/ |
+
+---
+
+**Built with ❤️ using industry-standard data engineering tools**

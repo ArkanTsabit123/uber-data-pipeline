@@ -1,0 +1,103 @@
+# run_all_verifications.py
+
+"""
+Run All Verifications - Uber ETL Pipeline
+
+This script runs all 6 phase verification scripts sequentially
+and displays a summary of results.
+"""
+
+import os
+import sys
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+
+class Colors:
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    BOLD = '\033[1m'
+    END = '\033[0m'
+
+
+def print_header(text):
+    """Print formatted header"""
+    print(f"\n{Colors.CYAN}{'='*60}{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}{text}{Colors.END}")
+    print(f"{Colors.CYAN}{'='*60}{Colors.END}\n")
+
+
+def print_check(text, status, detail=""):
+    """Print check result with appropriate color"""
+    icon = "✅" if status else "❌"
+    color = Colors.GREEN if status else Colors.RED
+    if detail:
+        print(f"{color}{icon} {text}{Colors.END}")
+        print(f"   {Colors.CYAN}→ {detail}{Colors.END}")
+    else:
+        print(f"{color}{icon} {text}{Colors.END}")
+
+
+def run_verification(phase):
+    """Run a single phase verification script"""
+    script = f"verify-phase-{phase}.py"
+    
+    if not os.path.exists(script):
+        print_check(f"{script} not found", False, "File missing")
+        return False
+    
+    print(f"\n{Colors.CYAN}{'='*60}{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}▶ RUNNING: {script}{Colors.END}")
+    print(f"{Colors.CYAN}{'='*60}{Colors.END}")
+    
+    result = subprocess.run([sys.executable, script], capture_output=False)
+    
+    if result.returncode == 0:
+        print_check(f"Phase {phase} PASSED", True)
+        return True
+    else:
+        print_check(f"Phase {phase} FAILED", False)
+        return False
+
+
+def main():
+    """Main execution function"""
+    print_header("🚀 UBER ETL PIPELINE - ALL VERIFICATIONS")
+    
+    print(f"⏰ Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"📂 Project: {os.getcwd()}")
+    
+    results = {}
+    
+    for phase in range(1, 7):
+        results[f"Phase {phase}"] = run_verification(phase)
+    
+    # Summary
+    print_header("📊 VERIFICATION SUMMARY")
+    
+    passed = sum(1 for v in results.values() if v)
+    total = len(results)
+    
+    for phase, status in results.items():
+        icon = "✅" if status else "❌"
+        color = Colors.GREEN if status else Colors.RED
+        print(f"{color}{icon} {phase}{Colors.END}")
+    
+    print(f"\n{Colors.BOLD}Total: {passed}/{total} passed{Colors.END}")
+    
+    if passed == total:
+        print(f"\n{Colors.GREEN}{Colors.BOLD}🎉 ALL VERIFICATIONS PASSED! Project is ready!{Colors.END}")
+        print(f"{Colors.GREEN}✅ You can now proceed to deployment{Colors.END}")
+        sys.exit(0)
+    else:
+        print(f"\n{Colors.YELLOW}{Colors.BOLD}⚠️ Some verifications failed.{Colors.END}")
+        print(f"{Colors.YELLOW}📌 Fix the failed items before proceeding{Colors.END}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

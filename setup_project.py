@@ -1,323 +1,383 @@
+# setup_project.py
+# Setup project structure and environment
+
 """
-Project Structure Generator for Uber ETL Pipeline
+Setup script for Uber ETL Pipeline Project (Apache Airflow Version)
 Run: python setup_project.py
 """
 
 import os
 import sys
+import subprocess
 from pathlib import Path
+from datetime import datetime
 
-def create_project_structure():
-    """Create all required folders and files for the Uber ETL Pipeline project"""
-    
-    print("=" * 60)
-    print("UBER ETL PIPELINE - PROJECT STRUCTURE GENERATOR")
-    print("=" * 60)
-    
-    # Base directory
-    base_dir = Path.cwd()
-    print(f"\n[FOLDER] Base directory: {base_dir}")
-    
-    # ============================================
-    # 1. CREATE FOLDER STRUCTURE
-    # ============================================
-    print("\n[CREATING] Folder structure...")
-    
-    folders = [
-        'data',
-        'warehouse',
-        'dashboard',
-        'screenshots',
-        'mage_project',
-        'mage_project/pipelines',
-        'mage_project/pipelines/uber_etl_pipeline',
-        'mage_project/pipelines/uber_etl_pipeline/blocks',
-    ]
-    
-    for folder in folders:
-        folder_path = base_dir / folder
-        folder_path.mkdir(parents=True, exist_ok=True)
-        print(f"  [OK] Created: {folder}/")
-    
-    # ============================================
-    # 2. CREATE FILES
-    # ============================================
-    print("\n[CREATING] Files...")
-    
-    # 2.1 README.md (sudah ada, skip)
-    readme_path = base_dir / 'README.md'
-    if not readme_path.exists():
-        print("  [WARN] README.md not found - please create manually")
-    else:
-        print("  [OK] README.md exists")
-    
-    # 2.2 LICENSE (sudah ada, skip)
-    license_path = base_dir / 'LICENSE'
-    if not license_path.exists():
-        print("  [WARN] LICENSE not found - please create manually")
-    else:
-        print("  [OK] LICENSE exists")
-    
-    # 2.3 requirements.txt (sudah ada, skip)
-    req_path = base_dir / 'requirements.txt'
-    if not req_path.exists():
-        print("  [WARN] requirements.txt not found - please create manually")
-    else:
-        print("  [OK] requirements.txt exists")
-    
-    # 2.4 .gitignore (sudah ada, skip)
-    gitignore_path = base_dir / '.gitignore'
-    if not gitignore_path.exists():
-        print("  [WARN] .gitignore not found - please create manually")
-    else:
-        print("  [OK] .gitignore exists")
-    
-    # 2.5 Create verification files
-    verification_files = [
-        'verify-phase-1.py',
-        'verify-phase-2.py',
-        'verify-phase-3.py',
-        'verify-phase-4.py',
-        'verify-phase-5.py',
-        'verify-phase-6.py',
-    ]
-    
-    for vf in verification_files:
-        vf_path = base_dir / vf
-        if not vf_path.exists():
-            # Create basic verification file
-            with open(vf_path, 'w', encoding='utf-8') as f:
-                f.write(f'''# {vf}
-# Uber ETL Pipeline - Phase Verification
 
-import os
-import sys
-
-def verify_phase():
-    print("=" * 60)
-    print(f"VERIFYING: {vf.replace('verify-', '').replace('.py', '')}")
-    print("=" * 60)
+class ProjectSetup:
+    """Setup class for project structure and environment"""
     
-    checks_passed = 0
-    total_checks = 10
+    def __init__(self):
+        self.root = Path.cwd()
+        self.colors = {
+            'GREEN': '\033[92m',
+            'YELLOW': '\033[93m',
+            'RED': '\033[91m',
+            'BLUE': '\033[94m',
+            'CYAN': '\033[96m',
+            'BOLD': '\033[1m',
+            'END': '\033[0m'
+        }
     
-    # Add your verification logic here
-    print("\\nAll checks passed!")
-    print("=" * 60)
-    return True
-
-if __name__ == "__main__":
-    success = verify_phase()
-    sys.exit(0 if success else 1)
-''')
-            print(f"  [OK] Created: {vf}")
+    def print_header(self, text):
+        """Print formatted header"""
+        print(f"\n{self.colors['CYAN']}{'='*60}{self.colors['END']}")
+        print(f"{self.colors['BOLD']}{self.colors['BLUE']}{text}{self.colors['END']}")
+        print(f"{self.colors['CYAN']}{'='*60}{self.colors['END']}\n")
+    
+    def print_check(self, text, status, detail=""):
+        """Print check result with appropriate color"""
+        icon = "✅" if status else "❌"
+        color = self.colors['GREEN'] if status else self.colors['RED']
+        if detail:
+            print(f"{color}{icon} {text}{self.colors['END']}")
+            print(f"   → {detail}")
         else:
-            print(f"  [OK] {vf} exists")
+            print(f"{color}{icon} {text}{self.colors['END']}")
     
-    # 2.6 Create dashboard app.py
-    app_path = base_dir / 'dashboard' / 'app.py'
-    if not app_path.exists():
-        with open(app_path, 'w', encoding='utf-8') as f:
-            f.write('''# dashboard/app.py
-# Uber NYC Trip Analytics Dashboard
-
-import streamlit as st
-import duckdb
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-
-# Page configuration
-st.set_page_config(
-    page_title="Uber NYC Dashboard",
-    page_icon=":car:",
-    layout="wide"
-)
-
-st.title("Uber NYC Trip Analytics Dashboard")
-st.markdown("*End-to-End Data Pipeline Project*")
-
-# Database connection
-@st.cache_resource
-def get_connection():
-    return duckdb.connect('../warehouse/uber.duckdb')
-
-@st.cache_data
-def load_data():
-    conn = get_connection()
-    try:
-        df = conn.execute("SELECT * FROM trip_analytics").fetchdf()
-    except:
-        df = pd.DataFrame()
-    conn.close()
-    return df
-
-# Load data
-df = load_data()
-
-if df.empty:
-    st.warning("No data found. Please run the ETL pipeline first!")
-    st.info("1. Start Mage: `mage start mage_project`")
-    st.info("2. Run the pipeline: uber_etl_pipeline")
-    st.info("3. Refresh this dashboard")
-else:
-    # Sidebar filters
-    st.sidebar.header("Filters")
-    
-    year = st.sidebar.selectbox(
-        "Year", 
-        sorted(df['pick_year'].unique()) if 'pick_year' in df.columns else []
-    )
-    month = st.sidebar.selectbox(
-        "Month", 
-        sorted(df['pick_month'].unique()) if 'pick_month' in df.columns else []
-    )
-    weekday = st.sidebar.multiselect(
-        "Weekday", 
-        df['pick_weekday'].unique() if 'pick_weekday' in df.columns else []
-    )
-    
-    # Filter data
-    filtered_df = df.copy()
-    if 'pick_year' in df.columns and year:
-        filtered_df = filtered_df[filtered_df['pick_year'] == year]
-    if 'pick_month' in df.columns and month:
-        filtered_df = filtered_df[filtered_df['pick_month'] == month]
-    if 'pick_weekday' in df.columns and weekday:
-        filtered_df = filtered_df[filtered_df['pick_weekday'].isin(weekday)]
-    
-    # KPI Cards
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Total Trips", f"{len(filtered_df):,}")
-    with col2:
-        st.metric("Total Revenue", f"${filtered_df['total_amount'].sum():,.2f}")
-    with col3:
-        st.metric("Avg Distance", f"{filtered_df['trip_distance'].mean():.2f} miles")
-    with col4:
-        st.metric("Avg Fare", f"${filtered_df['fare_amount'].mean():.2f}")
-    
-    # Charts
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if 'pick_hour' in filtered_df.columns:
-            hourly_revenue = filtered_df.groupby('pick_hour')['total_amount'].sum().reset_index()
-            fig1 = px.line(
-                hourly_revenue, 
-                x='pick_hour', 
-                y='total_amount',
-                title='Revenue by Hour',
-                markers=True
-            )
-            st.plotly_chart(fig1, use_container_width=True)
-    
-    with col2:
-        if 'pick_weekday' in filtered_df.columns:
-            weekday_trips = filtered_df['pick_weekday'].value_counts().reset_index()
-            weekday_trips.columns = ['weekday', 'count']
-            fig2 = px.bar(
-                weekday_trips, 
-                x='weekday', 
-                y='count',
-                title='Trips by Weekday'
-            )
-            st.plotly_chart(fig2, use_container_width=True)
-    
-    col3, col4 = st.columns(2)
-    
-    with col3:
-        if 'rate_code_name' in filtered_df.columns:
-            rate_dist = filtered_df['rate_code_name'].value_counts().reset_index()
-            rate_dist.columns = ['rate_code', 'count']
-            fig3 = px.pie(
-                rate_dist, 
-                values='count', 
-                names='rate_code',
-                title='Rate Code Distribution'
-            )
-            st.plotly_chart(fig3, use_container_width=True)
-    
-    with col4:
-        if 'trip_distance' in filtered_df.columns and 'fare_amount' in filtered_df.columns:
-            fig4 = px.scatter(
-                filtered_df, 
-                x='trip_distance', 
-                y='fare_amount',
-                title='Distance vs Fare',
-                opacity=0.6
-            )
-            st.plotly_chart(fig4, use_container_width=True)
-    
-    # Data table
-    with st.expander("View Data Table"):
-        st.dataframe(filtered_df)
+    def create_folders(self):
+        """Create required folders"""
+        self.print_header("📁 CREATING FOLDER STRUCTURE")
         
-        # Download button
-        csv = filtered_df.to_csv(index=False)
-        st.download_button(
-            label="Download CSV",
-            data=csv,
-            file_name="uber_trip_data.csv",
-            mime="text/csv"
-        )
+        folders = [
+            'data',
+            'warehouse',
+            'dashboard',
+            'dags',
+            'scripts',
+            'screenshots',
+            'docs'
+        ]
+        
+        for folder in folders:
+            folder_path = self.root / folder
+            if folder_path.exists():
+                self.print_check(f"Folder '{folder}/' already exists", True)
+            else:
+                folder_path.mkdir(parents=True)
+                self.print_check(f"Folder '{folder}/' created", True)
+    
+    def create_gitkeep(self):
+        """Create .gitkeep files in empty folders"""
+        self.print_header("📄 CREATING .GITKEEP FILES")
+        
+        folders = ['data', 'warehouse', 'screenshots']
+        for folder in folders:
+            file_path = self.root / folder / '.gitkeep'
+            file_path.touch(exist_ok=True)
+            self.print_check(f"{folder}/.gitkeep created", True)
+    
+    def create_requirements(self):
+        """Create requirements.txt if not exists"""
+        self.print_header("📦 CHECKING REQUIREMENTS")
+        
+        req_path = self.root / 'requirements.txt'
+        if req_path.exists():
+            self.print_check("requirements.txt already exists", True)
+            return
+        
+        content = '''# ============================================
+# UBER ETL PIPELINE - REQUIREMENTS
+# Apache Airflow Version - Python 3.10+
+# ============================================
 
-# Footer
-st.markdown("---")
-st.markdown("Built with Python using Streamlit, DuckDB, and Plotly")
-''')
-        print("  [OK] Created: dashboard/app.py")
-    else:
-        print("  [OK] dashboard/app.py exists")
+# Orchestration
+apache-airflow==2.7.3
+
+# Airflow Providers
+apache-airflow-providers-postgres==5.10.0
+apache-airflow-providers-docker==3.8.0
+
+# Core Dependencies
+duckdb==0.9.2
+pandas==2.1.4
+numpy==1.24.3
+streamlit==1.29.0
+plotly==5.18.0
+
+# Utilities
+python-dotenv==1.0.0
+pydantic==2.5.0
+openpyxl==3.1.2
+xlrd==2.0.1
+
+# Data Processing
+pyarrow==18.1.0
+dask==2023.5.0
+fastparquet==2023.10.1
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Database
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Development
+pytest==7.4.3
+pytest-cov==4.1.0
+black==23.12.1
+flake8==7.0.0
+isort==5.13.2
+
+# Docker Support
+docker==6.1.3
+'''
+        
+        with open(req_path, 'w') as f:
+            f.write(content)
+        self.print_check("requirements.txt created", True)
     
-    # 2.7 Create .gitkeep in empty folders
-    for folder in ['data', 'warehouse', 'screenshots']:
-        keep_file = base_dir / folder / '.gitkeep'
-        keep_file.touch(exist_ok=True)
+    def create_gitignore(self):
+        """Create .gitignore if not exists"""
+        self.print_header("📄 CHECKING .GITIGNORE")
+        
+        gitignore_path = self.root / '.gitignore'
+        if gitignore_path.exists():
+            self.print_check(".gitignore already exists", True)
+            return
+        
+        content = '''# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Airflow
+airflow.db
+airflow.cfg
+webserver_config.py
+logs/
+plugins/
+*.pid
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# DuckDB
+warehouse/*.duckdb
+warehouse/*.db
+warehouse/*.log
+
+# Data Files
+data/*.csv
+!data/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Streamlit
+.streamlit/
+.streamlit/config.toml
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backup Files
+*.bak
+*.tmp
+
+# Temporary files
+/tmp/
+*.tmp
+'''
+        
+        with open(gitignore_path, 'w') as f:
+            f.write(content)
+        self.print_check(".gitignore created", True)
     
-    # ============================================
-    # 3. VERIFICATION SUMMARY
-    # ============================================
-    print("\n" + "=" * 60)
-    print("PROJECT STRUCTURE CREATED SUCCESSFULLY!")
-    print("=" * 60)
+    def create_docker_compose(self):
+        """Create docker-compose.yml if not exists"""
+        self.print_header("🐳 CHECKING DOCKER COMPOSE")
+        
+        compose_path = self.root / 'docker-compose.yml'
+        if compose_path.exists():
+            self.print_check("docker-compose.yml already exists", True)
+            return
+        
+        content = '''services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  airflow-webserver:
+    image: apache/airflow:2.7.3
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: secret
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - ./warehouse:/opt/airflow/warehouse
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.3
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - ./warehouse:/opt/airflow/warehouse
+    command: scheduler
+
+volumes:
+  postgres_data:
+'''
+        
+        with open(compose_path, 'w') as f:
+            f.write(content)
+        self.print_check("docker-compose.yml created", True)
     
-    print("\nProject Structure:")
-    print("""
-uber-data-pipeline/
-├── [FOLDER] data/                 # Raw dataset
-│   └── uber_data.csv              [WARN] Download manually
-├── [FOLDER] warehouse/            # DuckDB database
-├── [FOLDER] dashboard/            # Streamlit app
-│   └── app.py                    [OK] Created
-├── [FOLDER] screenshots/          # Screenshots
-├── [FOLDER] mage_project/         # Mage AI project
-│   └── pipelines/
-│       └── uber_etl_pipeline/
-│           └── blocks/
-├── [FILE] README.md              [WARN] Create manually
-├── [FILE] LICENSE                [WARN] Create manually
-├── [FILE] requirements.txt       [WARN] Create manually
-├── [FILE] .gitignore             [WARN] Create manually
-├── [FILE] verify-phase-1.py      [OK] Created
-├── [FILE] verify-phase-2.py      [OK] Created
-├── [FILE] verify-phase-3.py      [OK] Created
-├── [FILE] verify-phase-4.py      [OK] Created
-├── [FILE] verify-phase-5.py      [OK] Created
-└── [FILE] verify-phase-6.py      [OK] Created
-""")
+    def create_license(self):
+        """Create LICENSE if not exists"""
+        self.print_header("📄 CHECKING LICENSE")
+        
+        license_path = self.root / 'LICENSE'
+        if license_path.exists():
+            self.print_check("LICENSE already exists", True)
+            return
+        
+        content = '''MIT License
+
+Copyright (c) 2026 Arkan Tsabit
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
+        
+        with open(license_path, 'w') as f:
+            f.write(content)
+        self.print_check("LICENSE created", True)
     
-    print("NEXT STEPS:")
-    print("  1. Download dataset to data/uber_data.csv")
-    print("  2. Create README.md, LICENSE, requirements.txt, .gitignore")
-    print("  3. Activate venv: source venv/bin/activate (or venv\\Scripts\\activate)")
-    print("  4. Install: pip install -r requirements.txt")
-    print("  5. Start Mage: mage start mage_project")
-    print("  6. Create pipeline in Mage UI")
-    print("  7. Run: streamlit run dashboard/app.py")
+    def verify_venv(self):
+        """Check if virtual environment is active"""
+        self.print_header("🔧 VIRTUAL ENVIRONMENT")
+        
+        in_venv = sys.prefix != sys.base_prefix
+        if in_venv:
+            self.print_check("Virtual environment active", True, sys.prefix)
+        else:
+            self.print_check("Virtual environment NOT active", False, "Run: venv\\Scripts\\activate")
+        
+        venv_path = self.root / 'venv'
+        if venv_path.exists():
+            self.print_check("venv folder exists", True)
+        else:
+            self.print_check("venv folder NOT found", False, "Run: python -m venv venv")
     
-    print("\n" + "=" * 60)
+    def run_all(self):
+        """Run all setup steps"""
+        self.print_header("🚀 UBER ETL PIPELINE - PROJECT SETUP")
+        
+        print(f"📂 Project Root: {self.root}")
+        print(f"⏰ Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        
+        self.create_folders()
+        self.create_gitkeep()
+        self.create_requirements()
+        self.create_gitignore()
+        self.create_docker_compose()
+        self.create_license()
+        self.verify_venv()
+        
+        self.print_header("✅ SETUP COMPLETE!")
+        print("\n📋 Next Steps:")
+        print("  1. Activate venv: venv\\Scripts\\activate")
+        print("  2. Install dependencies: pip install -r requirements.txt")
+        print("  3. Start Docker Desktop")
+        print("  4. Start Airflow: docker-compose up -d")
+        print("  5. Open Airflow UI: http://localhost:8080")
+        print("  6. Trigger DAG: uber_etl_pipeline")
+
 
 if __name__ == "__main__":
-    create_project_structure()
+    setup = ProjectSetup()
+    setup.run_all()
