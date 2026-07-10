@@ -11,6 +11,8 @@ import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import os
+import sys
 
 # ============================================
 # Page Configuration
@@ -30,13 +32,26 @@ st.markdown("*End-to-End Data Pipeline with Apache Airflow*")
 st.markdown("---")
 
 # ============================================
-# Database Connection
+# Database Connection - FIXED with absolute path
 # ============================================
 @st.cache_resource
 def get_connection():
     """Get DuckDB connection"""
     try:
-        return duckdb.connect('warehouse/uber.duckdb')
+        # Get absolute path from current file location
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(current_dir)
+        db_path = os.path.join(root_dir, 'warehouse', 'uber.duckdb')
+        
+        # Debug info (will show in dashboard)
+        st.write(f"📂 Database path: `{db_path}`")
+        st.write(f"✅ File exists: `{os.path.exists(db_path)}`")
+        
+        if not os.path.exists(db_path):
+            st.error("❌ Database file not found!")
+            return None
+        
+        return duckdb.connect(db_path)
     except Exception as e:
         st.error(f"❌ Database connection failed: {e}")
         return None
@@ -54,12 +69,29 @@ def load_data():
         return df
     except Exception as e:
         conn.close()
+        st.error(f"❌ Error loading data: {e}")
         return pd.DataFrame()
 
 # ============================================
 # Load Data
 # ============================================
 df = load_data()
+
+# ============================================
+# Debug Info (Remove after successful)
+# ============================================
+st.write("### 🔍 Debug Info")
+if df.empty:
+    st.warning("DataFrame is EMPTY")
+    st.write(f"DataFrame shape: {df.shape}")
+else:
+    st.success(f"✅ DataFrame loaded: {df.shape[0]:,} rows, {df.shape[1]} columns")
+    st.write(f"📋 Columns: {df.columns.tolist()}")
+    st.write(f"📅 Years: {sorted(df['pick_year'].unique())}")
+    st.write(f"📅 Months: {sorted(df['pick_month'].unique())}")
+    st.write(f"📅 Weekdays: {df['pick_weekday'].unique().tolist()}")
+
+st.markdown("---")
 
 # ============================================
 # Show Warning if No Data
@@ -76,31 +108,24 @@ if df.empty:
 # ============================================
 st.sidebar.header("🔍 Filters")
 
-year = st.sidebar.selectbox(
-    "Year",
-    sorted(df['pick_year'].unique()) if 'pick_year' in df.columns else []
-)
+# Get unique values for filters
+year_options = sorted(df['pick_year'].unique()) if 'pick_year' in df.columns else []
+month_options = sorted(df['pick_month'].unique()) if 'pick_month' in df.columns else []
+weekday_options = df['pick_weekday'].unique().tolist() if 'pick_weekday' in df.columns else []
 
-month = st.sidebar.selectbox(
-    "Month",
-    sorted(df['pick_month'].unique()) if 'pick_month' in df.columns else []
-)
-
-weekday = st.sidebar.multiselect(
-    "Weekday",
-    df['pick_weekday'].unique() if 'pick_weekday' in df.columns else []
-)
+# Filter widgets
+year = st.sidebar.selectbox("📅 Year", year_options) if year_options else None
+month = st.sidebar.selectbox("📅 Month", month_options) if month_options else None
+weekday = st.sidebar.multiselect("📅 Weekday", weekday_options) if weekday_options else []
 
 # Apply filters
 filtered_df = df.copy()
 
-if 'pick_year' in df.columns and year:
+if year:
     filtered_df = filtered_df[filtered_df['pick_year'] == year]
-
-if 'pick_month' in df.columns and month:
+if month:
     filtered_df = filtered_df[filtered_df['pick_month'] == month]
-
-if 'pick_weekday' in df.columns and weekday:
+if weekday:
     filtered_df = filtered_df[filtered_df['pick_weekday'].isin(weekday)]
 
 # ============================================
@@ -110,33 +135,29 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
-        "Total Trips",
+        "🚗 Total Trips",
         f"{len(filtered_df):,}",
-        delta=None,
         help="Total number of trips"
     )
 
 with col2:
     st.metric(
-        "Total Revenue",
+        "💰 Total Revenue",
         f"${filtered_df['total_amount'].sum():,.2f}",
-        delta=None,
         help="Total revenue from all trips"
     )
 
 with col3:
     st.metric(
-        "Avg Distance",
+        "📏 Avg Distance",
         f"{filtered_df['trip_distance'].mean():.2f} miles",
-        delta=None,
         help="Average trip distance"
     )
 
 with col4:
     st.metric(
-        "Avg Fare",
+        "💵 Avg Fare",
         f"${filtered_df['fare_amount'].mean():.2f}",
-        delta=None,
         help="Average fare per trip"
     )
 

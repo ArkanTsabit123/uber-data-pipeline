@@ -233,50 +233,64 @@ class Phase4Verifier:
         
         try:
             import duckdb
-            import pandas as pd
             conn = duckdb.connect(str(db_path))
             
-            views = conn.execute("SHOW VIEWS").fetchall()
-            view_names = [v[0] for v in views]
+            # Check if view exists (compatible with DuckDB 1.5.4)
+            view_exists = False
+            try:
+                conn.execute("SELECT * FROM trip_analytics LIMIT 1")
+                view_exists = True
+            except:
+                try:
+                    result = conn.execute("SELECT table_name FROM information_schema.views WHERE table_name = 'trip_analytics'").fetchall()
+                    view_exists = len(result) > 0
+                except:
+                    pass
             
-            if 'trip_analytics' in view_names:
-                count = conn.execute("SELECT COUNT(*) FROM trip_analytics").fetchone()[0]
-                if count > 0:
-                    self.checks_passed += 1
-                    self.print_check("trip_analytics view has data", True, f"{count:,} rows")
-                    self.add_check_result(
-                        'view_data',
-                        True,
-                        f'trip_analytics view has {count:,} rows',
-                        {'rows': count}
-                    )
-                    return True
-                else:
-                    self.checks_failed += 1
-                    self.print_check("trip_analytics view is empty", False)
-                    self.add_check_result(
-                        'view_data',
-                        False,
-                        'trip_analytics view is empty',
-                        {'rows': 0}
-                    )
-                    return False
-            else:
+            if not view_exists:
                 self.checks_failed += 1
                 self.print_check("trip_analytics view NOT found", False)
                 self.add_check_result(
                     'view_data',
                     False,
-                    'trip_analytics view not found',
-                    {'available_views': view_names}
+                    'trip_analytics view not found'
                 )
+                conn.close()
                 return False
             
-            conn.close()
+            count = conn.execute("SELECT COUNT(*) FROM trip_analytics").fetchone()[0]
+            if count > 0:
+                self.checks_passed += 1
+                self.print_check("trip_analytics view has data", True, f"{count:,} rows")
+                self.add_check_result(
+                    'view_data',
+                    True,
+                    f'trip_analytics view has {count:,} rows',
+                    {'rows': count}
+                )
+                conn.close()
+                return True
+            else:
+                self.checks_failed += 1
+                self.print_check("trip_analytics view is empty", False)
+                self.add_check_result(
+                    'view_data',
+                    False,
+                    'trip_analytics view is empty',
+                    {'rows': 0}
+                )
+                conn.close()
+                return False
             
         except Exception as e:
             self.checks_failed += 1
             self.print_check("Error checking view", False, str(e))
+            self.add_check_result(
+                'view_data',
+                False,
+                f'Error: {str(e)}',
+                {'error': str(e)}
+            )
             return False
     
     def verify_foreign_keys(self):
@@ -294,16 +308,15 @@ class Phase4Verifier:
             import duckdb
             conn = duckdb.connect(str(db_path))
             
-            # Check if fact_table exists
             tables = conn.execute("SHOW TABLES").fetchall()
             table_names = [t[0] for t in tables]
             
             if 'fact_table' not in table_names:
                 self.checks_failed += 1
                 self.print_check("fact_table not found", False)
+                conn.close()
                 return False
             
-            # Check foreign key relationships
             fk_checks = [
                 ("SELECT COUNT(*) FROM fact_table f LEFT JOIN datetime_dim d ON f.datetime_id = d.datetime_id WHERE d.datetime_id IS NULL", "datetime_dim references"),
                 ("SELECT COUNT(*) FROM fact_table f LEFT JOIN rate_code_dim r ON f.rate_code_id = r.rate_code_id WHERE r.rate_code_id IS NULL", "rate_code_dim references"),

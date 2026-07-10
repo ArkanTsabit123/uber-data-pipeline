@@ -204,8 +204,26 @@ class Phase3Verifier:
         try:
             import duckdb
             conn = duckdb.connect(str(db_path))
-            views = conn.execute("SHOW VIEWS").fetchall()
-            view_names = [v[0] for v in views]
+            
+            # Try multiple methods to get views
+            view_names = []
+            try:
+                # Method 1: SHOW VIEWS (DuckDB 0.9.x)
+                views = conn.execute("SHOW VIEWS").fetchall()
+                view_names = [v[0] for v in views]
+            except:
+                try:
+                    # Method 2: information_schema (DuckDB 1.5.x)
+                    views = conn.execute("SELECT table_name FROM information_schema.views WHERE table_schema NOT IN ('information_schema', 'pg_catalog')").fetchall()
+                    view_names = [v[0] for v in views]
+                except:
+                    # Method 3: Try to query the view directly
+                    try:
+                        conn.execute("SELECT * FROM trip_analytics LIMIT 1")
+                        view_names = ['trip_analytics']
+                    except:
+                        pass
+            
             conn.close()
             
             if 'trip_analytics' in view_names:
