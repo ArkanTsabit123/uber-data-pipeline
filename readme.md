@@ -1,4 +1,3 @@
-```markdown
 # Uber ETL Pipeline Project
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -88,7 +87,7 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 
 ### Pipeline Flow Diagram
 
-![Pipeline Flow Diagram](screenshots/32-pipeline-flow-diagram.png)
+![Pipeline Flow Diagram](screenshots/32-pipeline-flow.png)
 
 *Diagram showing the complete ETL pipeline flow from data extraction to dashboard visualization.*
 
@@ -169,10 +168,10 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 | Column | Type | Description |
 |--------|------|-------------|
 | `trip_id` | INTEGER | Primary Key (auto-increment) |
-| `datetime_id` | INTEGER | FK → datetime_dim |
-| `rate_code_id` | INTEGER | FK → rate_code_dim |
-| `pickup_location_id` | INTEGER | FK → location_dim |
-| `dropoff_location_id` | INTEGER | FK → location_dim |
+| `datetime_id` | INTEGER | FK to datetime_dim |
+| `rate_code_id` | INTEGER | FK to rate_code_dim |
+| `pickup_location_id` | INTEGER | FK to location_dim |
+| `dropoff_location_id` | INTEGER | FK to location_dim |
 | `trip_distance` | FLOAT | Trip distance (miles) |
 | `trip_duration` | FLOAT | Trip duration (minutes) |
 | `fare_amount` | FLOAT | Fare amount ($) |
@@ -186,8 +185,6 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 
 ### Phase 1: Setup & Environment
 
-Establish the foundation for the project.
-
 | Task | Detail |
 |------|--------|
 | 1.1 | Folder structure: `dags/`, `scripts/`, `data/`, `warehouse/`, `dashboard/` |
@@ -197,8 +194,6 @@ Establish the foundation for the project.
 | 1.5 | Verification: `python verify-phase-1.py` |
 
 ### Phase 2: Airflow DAG Creation
-
-Create the Airflow DAG for orchestration.
 
 | Task | Detail |
 |------|--------|
@@ -211,8 +206,6 @@ Create the Airflow DAG for orchestration.
 
 ### Phase 3: Data Transformation
 
-Build the Star Schema.
-
 | Task | Detail |
 |------|--------|
 | 3.1 | Data cleaning: `drop_duplicates()`, `dropna()`, `reset_index()` |
@@ -224,8 +217,6 @@ Build the Star Schema.
 
 ### Phase 4: Data Loading to DuckDB
 
-Store transformed data in DuckDB.
-
 | Task | Detail |
 |------|--------|
 | 4.1 | Connect to DuckDB: `duckdb.connect('warehouse/uber.duckdb')` |
@@ -235,8 +226,6 @@ Store transformed data in DuckDB.
 | 4.5 | Verification: `python verify-phase-4.py` |
 
 ### Phase 5: Dashboard Development
-
-Build an interactive visualization dashboard.
 
 | Task | Detail |
 |------|--------|
@@ -251,8 +240,6 @@ Build an interactive visualization dashboard.
 | 5.9 | Verification: `python verify-phase-5.py` |
 
 ### Phase 6: Deployment & Documentation
-
-Finalize the project.
 
 | Task | Detail |
 |------|--------|
@@ -340,9 +327,8 @@ pip install -r requirements.txt
 # 4. Start Airflow with Docker
 docker-compose up -d
 
-# 5. Wait for services to start (about 30 seconds)
-# Access Airflow UI: http://localhost:8080
-# Username: admin, Password: admin
+# 5. Access Airflow UI
+# http://localhost:8080 (admin/admin)
 
 # 6. Trigger the DAG
 # In Airflow UI, find 'uber_etl_pipeline' and click 'Trigger DAG'
@@ -522,8 +508,8 @@ python run_all_verifications.py
 
 | Screenshot | Description |
 |------------|-------------|
-| ![Pipeline Flow Diagram](screenshots/32-pipeline-flow-diagram.png) | ETL Pipeline flow diagram showing the complete data flow from CSV to Dashboard |
-| ![ERD Diagram](screenshots/33-erd-diagram.png) | Star Schema ERD diagram showing fact_table and dimension tables relationships |
+| ![Pipeline Flow Diagram](screenshots/32-pipeline-flow.png) | ETL Pipeline flow diagram |
+| ![ERD Diagram](screenshots/33-erd-diagram.png) | Star Schema ERD diagram |
 
 ### Phase 0: Repository & Setup
 
@@ -605,7 +591,7 @@ python run_all_verifications.py
 | Airflow UI not loading | Check `docker-compose ps` for container status |
 | Dashboard not loading | Upgrade Streamlit: `pip install streamlit --upgrade` |
 | DAG not showing in UI | Check DAG folder path in `airflow.cfg` |
-| `No module named 'pwd'` | **Use Docker** (Airflow doesn't run natively on Windows) |
+| `No module named 'pwd'` | Use Docker (Airflow doesn't run natively on Windows) |
 
 ### Getting Help
 
@@ -684,4 +670,3 @@ If you find this project useful, please give it a star on GitHub!
 ---
 
 **Built with industry-standard data engineering tools**
-```
