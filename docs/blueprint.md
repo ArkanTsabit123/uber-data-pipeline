@@ -1,4 +1,4 @@
-# 📘 UBER ETL PIPELINE - TECHNICAL BLUEPRINT
+# UBER ETL PIPELINE - TECHNICAL BLUEPRINT
 
 ## Document Information
 
@@ -13,7 +13,7 @@
 
 ---
 
-## 🎯 Project Objectives
+## Project Objectives
 
 ### Core Goals
 1. Build **end-to-end data pipeline** for NYC Uber/Taxi trip data
@@ -23,51 +23,51 @@
 5. Provide **comprehensive verification** across 6 phases
 
 ### Success Metrics
-- ✅ 52+ automated verification checks
-- ✅ 100% data quality validation
-- ✅ 32+ documentation screenshots
-- ✅ < 5 minutes pipeline execution time (100,000 rows)
+- 52+ automated verification checks
+- 100% data quality validation
+- 32+ documentation screenshots
+- < 5 minutes pipeline execution time (100,000 rows)
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    DOCKER CONTAINER ENVIRONMENT                    │
-│  ┌───────────────────────────────────────────────────────────────┐ │
-│  │                    APACHE AIRFLOW (2.7.3)                    │ │
-│  │                                                              │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │ │
-│  │  │   EXTRACT    │  │  TRANSFORM   │  │    LOAD      │      │ │
-│  │  │              │  │              │  │              │      │ │
-│  │  │ extract.py   │─▶│ transform.py │─▶│   load.py    │      │ │
-│  │  │  (Python)    │  │  (Python)    │  │  (Python)    │      │ │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘      │ │
-│  │         │                 │                 │                │ │
-│  └─────────│─────────────────│─────────────────│────────────────┘ │
-│            │                 │                 │                  │
-│            ▼                 ▼                 ▼                  │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
-│  │  Raw CSV     │  │ Star Schema  │  │   DuckDB     │           │
-│  │  Dataset     │  │  (4 Tables)  │  │  Warehouse   │           │
-│  │  (100K rows) │  │              │  │              │           │
-│  └──────────────┘  └──────────────┘  └──────────────┘           │
-│                                                      │             │
-│                                                      ▼             │
-│                                             ┌──────────────┐       │
-│                                             │  Streamlit   │       │
-│                                             │  Dashboard   │       │
-│                                             │  (Port 8501) │       │
-│                                             └──────────────┘       │
-│                                                                     │
-│  ┌──────────────────────────────────────────────────────────────┐  │
-│  │                    POSTGRESQL (Metadata DB)                  │  │
-│  └──────────────────────────────────────────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
++-----------------------------------------------------------+
+|                 DOCKER CONTAINER ENVIRONMENT                |
+|  +-------------------------------------------------------+ |
+|  |                APACHE AIRFLOW (2.7.3)                 | |
+|  |                                                       | |
+|  |  +-------------+  +-------------+  +-------------+   | |
+|  |  |  EXTRACT    |  |  TRANSFORM  |  |    LOAD     |   | |
+|  |  |             |  |             |  |             |   | |
+|  |  | extract.py  |->| transform.py|->|  load.py    |   | |
+|  |  |  (Python)   |  |  (Python)   |  |  (Python)   |   | |
+|  |  +-------------+  +-------------+  +-------------+   | |
+|  |        |                |                |            | |
+|  +--------|----------------|----------------|------------+ |
+|           |                |                |              |
+|           v                v                v              |
+|  +-------------+  +-------------+  +-------------+        |
+|  |  Raw CSV    |  | Star Schema |  |   DuckDB    |        |
+|  |  Dataset    |  |  (4 Tables) |  |  Warehouse  |        |
+|  |  (100K rows)|  |             |  |             |        |
+|  +-------------+  +-------------+  +-------------+        |
+|                                              |             |
+|                                              v             |
+|                                     +-------------+        |
+|                                     |  Streamlit  |        |
+|                                     |  Dashboard  |        |
+|                                     |  (Port 8501)|        |
+|                                     +-------------+        |
+|                                                           |
+|  +----------------------------------------------------+  |
+|  |          POSTGRESQL (Metadata DB)                   |  |
+|  +----------------------------------------------------+  |
+|                                                           |
++-----------------------------------------------------------+
 ```
 
 ### Technology Stack
@@ -84,49 +84,49 @@
 
 ---
 
-## 📊 Data Model Design
+## Data Model Design
 
 ### Star Schema Diagram
 
 ```
-┌─────────────────────┐          ┌─────────────────────────┐
-│    datetime_dim     │          │     rate_code_dim       │
-├─────────────────────┤          ├─────────────────────────┤
-│ datetime_id (PK)    │◄─────┐   │ rate_code_id (PK)       │◄─────┐
-│ pickup_datetime     │      │   │ RatecodeID              │      │
-│ pick_hour           │      │   │ rate_code_name          │      │
-│ pick_day            │      │   └─────────────────────────┘      │
-│ pick_month          │      │                                     │
-│ pick_year           │      │                                     │
-│ pick_weekday        │      │                                     │
-└─────────────────────┘      │                                     │
-                              │    ┌──────────────────────────────┐│
-                              └────┤        fact_table            ││
-                                   ├──────────────────────────────┤│
-                                   │ trip_id (PK)                 ││
-                                   │ datetime_id (FK)             │─┘
-                                   │ rate_code_id (FK)            │─┐
-                                   │ pickup_location_id (FK)      │ │
-                                   │ dropoff_location_id (FK)     │ │
-                                   │ trip_distance                │ │
-                                   │ trip_duration                │ │
-                                   │ fare_amount                  │ │
-                                   │ total_amount                 │ │
-                                   │ passenger_count              │ │
-                                   │ payment_type_id              │ │
-                                   └──────────────────────────────┘ │
-                              ┌─────────────────────────┐          │
-                              │     location_dim        │          │
-                              ├─────────────────────────┤          │
-                              │ location_id (PK)        │◄─────────┘
-                              │ location_name           │
-                              │ borough                 │
-                              └─────────────────────────┘
++---------------------+          +---------------------------+
+|    datetime_dim     |          |     rate_code_dim         |
++---------------------+          +---------------------------+
+| datetime_id (PK)    |<-------+ | rate_code_id (PK)         |<-------+
+| pickup_datetime     |          | RatecodeID                |        |
+| pick_hour           |          | rate_code_name            |        |
+| pick_day            |          +---------------------------+        |
+| pick_month          |                                               |
+| pick_year           |                                               |
+| pick_weekday        |                                               |
++---------------------+          +-----------------------------------+
+                                 |            fact_table              |
+                                 +-----------------------------------+
+                                 | trip_id (PK)                      |
+                                 | datetime_id (FK)                  |--+
+                                 | rate_code_id (FK)                 |--+
+                                 | pickup_location_id (FK)           |  |
+                                 | dropoff_location_id (FK)          |  |
+                                 | trip_distance                     |  |
+                                 | trip_duration                     |  |
+                                 | fare_amount                       |  |
+                                 | total_amount                      |  |
+                                 | passenger_count                   |  |
+                                 | payment_type_id                   |  |
+                                 +-----------------------------------+  |
+                           +---------------------------+               |
+                           |     location_dim          |               |
+                           +---------------------------+               |
+                           | location_id (PK)          |<--------------+
+                           | location_name             |
+                           | borough                   |
+                           +---------------------------+
 ```
 
 ### Table Definitions
 
 #### fact_table (Fact Table)
+
 | Column | Type | Nullable | Description | Source |
 |--------|------|----------|-------------|--------|
 | trip_id | INTEGER | NOT NULL | Surrogate key | Auto-increment |
@@ -142,6 +142,7 @@
 | payment_type_id | INTEGER | NULL | Payment type code | payment_type |
 
 #### datetime_dim (Dimension)
+
 | Column | Type | Description |
 |--------|------|-------------|
 | datetime_id | INTEGER | Surrogate key |
@@ -153,6 +154,7 @@
 | pick_weekday | VARCHAR | Monday-Sunday |
 
 #### rate_code_dim (Dimension)
+
 | Column | Type | Description |
 |--------|------|-------------|
 | rate_code_id | INTEGER | Surrogate key |
@@ -160,6 +162,7 @@
 | rate_code_name | VARCHAR | Human-readable name |
 
 **Rate Code Mapping:**
+
 | RatecodeID | Name |
 |------------|------|
 | 1 | Standard |
@@ -170,6 +173,7 @@
 | 6 | Group Ride |
 
 #### location_dim (Dimension)
+
 | Column | Type | Description |
 |--------|------|-------------|
 | location_id | INTEGER | Surrogate key |
@@ -178,53 +182,53 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 uber-data-pipeline/
 │
-├── 📁 dags/                              # Airflow DAGs
+├── dags/
 │   └── uber_etl_dag.py                   # Main DAG definition
 │
-├── 📁 scripts/                           # Python scripts
+├── scripts/
 │   ├── extract.py                        # Extract data from CSV
 │   ├── transform.py                      # Transform to Star Schema
 │   └── load.py                           # Load to DuckDB
 │
-├── 📁 data/                              # Raw data
+├── data/
 │   └── uber_data.csv                     # NYC Uber/Taxi dataset
 │
-├── 📁 warehouse/                         # Data warehouse
+├── warehouse/
 │   └── uber.duckdb                       # DuckDB database
 │
-├── 📁 dashboard/                         # Streamlit dashboard
+├── dashboard/
 │   └── app.py                            # Dashboard application
 │
-├── 📁 screenshots/                       # Documentation
+├── screenshots/
 │   └── (32+ screenshots)
 │
-├── 📄 docker-compose.yml                 # Docker Compose for Airflow
-├── 📄 requirements.txt                   # Python dependencies
-├── 📄 .gitignore                         # Git ignore file
-├── 📄 LICENSE                            # MIT License
-├── 📄 README.md                          # Project documentation
-├── 📄 blueprint.md                       # This file
+├── docker-compose.yml                    # Docker Compose for Airflow
+├── requirements.txt                      # Python dependencies
+├── .gitignore                            # Git ignore file
+├── LICENSE                               # MIT License
+├── README.md                             # Project documentation
+├── blueprint.md                          # This file
 │
-├── 📄 verify-phase-1.py                  # Phase 1: Setup
-├── 📄 verify-phase-2.py                  # Phase 2: DAG Creation
-├── 📄 verify-phase-3.py                  # Phase 3: Transform
-├── 📄 verify-phase-4.py                  # Phase 4: Load
-├── 📄 verify-phase-5.py                  # Phase 5: Dashboard
-├── 📄 verify-phase-6.py                  # Phase 6: Deployment
+├── verify-phase-1.py                     # Phase 1: Setup
+├── verify-phase-2.py                     # Phase 2: DAG Creation
+├── verify-phase-3.py                     # Phase 3: Transform
+├── verify-phase-4.py                     # Phase 4: Load
+├── verify-phase-5.py                     # Phase 5: Dashboard
+├── verify-phase-6.py                     # Phase 6: Deployment
 │
-├── 📄 setup_project.py                   # Project setup script
-├── 📄 setup_pipeline.py                  # Pipeline setup script
-└── 📄 structure.py                       # Display project structure
+├── setup_project.py                      # Project setup script
+├── setup_pipeline.py                     # Pipeline setup script
+└── structure.py                          # Display project structure
 ```
 
 ---
 
-## 📋 Implementation Details
+## Implementation Details
 
 ### DAG Configuration
 
@@ -270,7 +274,7 @@ Volumes:
 
 ---
 
-## ✅ Verification System
+## Verification System
 
 ### Verification Summary
 
@@ -285,12 +289,13 @@ Volumes:
 | **TOTAL** | | **52** | **All Phases** |
 
 ### Verification Outputs
+
 - `phaseX_verification.json` - Machine-readable results
 - `phaseX_verification_report.txt` - Human-readable summary
 
 ---
 
-## 🚀 Deployment Guide
+## Deployment Guide
 
 ### Prerequisites
 
@@ -337,9 +342,10 @@ streamlit run dashboard/app.py
 
 ---
 
-## 📊 Performance Specifications
+## Performance Specifications
 
 ### Data Volume
+
 | Metric | Value |
 |--------|-------|
 | Input Size | ~15 MB |
@@ -348,6 +354,7 @@ streamlit run dashboard/app.py
 | Database Size | ~10 MB |
 
 ### Execution Time
+
 | Task | Time |
 |------|------|
 | Extract | ~1 second |
@@ -357,7 +364,7 @@ streamlit run dashboard/app.py
 
 ---
 
-## 🔐 Security Considerations
+## Security Considerations
 
 ### Default Credentials (Change for Production)
 
@@ -367,6 +374,7 @@ streamlit run dashboard/app.py
 | PostgreSQL | airflow | airflow |
 
 ### Network Ports
+
 | Port | Service | Exposure |
 |------|---------|----------|
 | 8080 | Airflow UI | Localhost |
@@ -376,7 +384,7 @@ streamlit run dashboard/app.py
 
 ---
 
-## 📝 Changelog
+## Changelog
 
 | Version | Date | Changes |
 |---------|------|---------|
@@ -385,7 +393,7 @@ streamlit run dashboard/app.py
 
 ---
 
-## 🔗 Quick Links
+## Quick Links
 
 | Resource | URL |
 |----------|-----|
@@ -398,4 +406,4 @@ streamlit run dashboard/app.py
 
 ---
 
-**Built with ❤️ using industry-standard data engineering tools**
+**Built with industry-standard data engineering tools**

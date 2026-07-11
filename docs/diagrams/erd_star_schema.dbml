@@ -1,0 +1,119 @@
+// =============================================
+// STAR SCHEMA - UBER ETL DATA WAREHOUSE 
+// ALL RELATIONSHIPS CONNECTED 
+// USING https://dbdiagram.io/
+// =============================================
+
+// ---------------------------------------------
+// 1. datetime_dim (Time Dimension)
+// ---------------------------------------------
+Table datetime_dim {
+  datetime_id integer [pk, increment]
+  pickup_datetime timestamp
+  pick_hour integer [note: '0-23']
+  pick_day integer [note: '1-31']
+  pick_month integer [note: '1-12']
+  pick_year integer
+  pick_weekday varchar [note: 'Monday-Sunday']
+}
+
+// ---------------------------------------------
+// 2. rate_code_dim (Rate Code Dimension)
+// ---------------------------------------------
+Table rate_code_dim {
+  rate_code_id integer [pk, increment]
+  RatecodeID integer [unique]
+  rate_code_name varchar [note: 'Standard, JFK, Newark, etc.']
+}
+
+// ---------------------------------------------
+// 3. location_dim (Location Dimension)
+// ---------------------------------------------
+Table location_dim {
+  location_id integer [pk, increment]
+  location_name varchar [note: 'NYC zone name']
+  borough varchar [note: 'Manhattan, Brooklyn, etc.']
+}
+
+// ---------------------------------------------
+// 4. fact_table (Fact Table)
+// ---------------------------------------------
+Table fact_table {
+  trip_id integer [pk, increment]
+  datetime_id integer [not null]
+  rate_code_id integer [not null]
+  pickup_location_id integer [not null]
+  dropoff_location_id integer [not null]
+  trip_distance float
+  trip_duration float [note: 'in minutes']
+  fare_amount float
+  total_amount float [note: 'with tips and tolls']
+  passenger_count integer
+  payment_type_id integer [note: '1=Credit, 2=Cash, etc.']
+}
+
+// ---------------------------------------------
+// 5. trip_analytics (Table for Dashboard)
+// ---------------------------------------------
+Table trip_analytics {
+  trip_id integer
+  trip_distance float
+  fare_amount float
+  total_amount float
+  passenger_count integer
+  pickup_datetime timestamp
+  pick_hour integer
+  pick_weekday varchar
+  pick_month integer
+  pick_year integer
+  rate_code_name varchar
+  pickup_location varchar
+  dropoff_location varchar
+}
+
+// =============================================
+// RELATIONSHIPS - ALL CONNECTED
+// =============================================
+
+// --- fact_table to dimensions ---
+Ref: fact_table.datetime_id > datetime_dim.datetime_id
+Ref: fact_table.rate_code_id > rate_code_dim.rate_code_id
+Ref: fact_table.pickup_location_id > location_dim.location_id
+Ref: fact_table.dropoff_location_id > location_dim.location_id
+
+// --- trip_analytics to fact_table and rate_code_dim ---
+Ref: trip_analytics.trip_id > fact_table.trip_id
+Ref: trip_analytics.rate_code_name > rate_code_dim.rate_code_name
+
+// =============================================
+// SAMPLE DATA (Records)
+// =============================================
+Records rate_code_dim(rate_code_id, RatecodeID, rate_code_name) {
+  1, 1, 'Standard'
+  2, 2, 'JFK'
+  3, 3, 'Newark'
+  4, 4, 'Nassau/Westchester'
+  5, 5, 'Negotiated'
+  6, 6, 'Group Ride'
+}
+
+Records location_dim(location_id, location_name, borough) {
+  1, 'Zone 1', 'NYC'
+  2, 'Zone 2', 'NYC'
+  3, 'Zone 3', 'NYC'
+  4, 'Zone 4', 'NYC'
+  5, 'Zone 5', 'NYC'
+  6, 'Zone 6', 'NYC'
+}
+
+Records datetime_dim(datetime_id, pickup_datetime, pick_hour, pick_day, pick_month, pick_year, pick_weekday) {
+  1, '2016-01-01 00:00:00', 0, 1, 1, 2016, 'Friday'
+  2, '2016-01-01 08:00:00', 8, 1, 1, 2016, 'Friday'
+  3, '2016-01-01 17:00:00', 17, 1, 1, 2016, 'Friday'
+}
+
+Records fact_table(trip_id, datetime_id, rate_code_id, pickup_location_id, dropoff_location_id, trip_distance, fare_amount, total_amount, passenger_count) {
+  1, 1, 1, 1, 2, 2.50, 9.00, 12.35, 1
+  2, 2, 3, 2, 3, 2.90, 11.00, 15.35, 1
+  3, 3, 2, 3, 4, 19.98, 54.50, 63.80, 2
+}

@@ -1,0 +1,80 @@
+// =============================================
+// PIPELINE FLOW DIAGRAM - UBER ETL
+// ALL RELATIONSHIPS CONNECTED
+// =============================================
+
+// ---------------------------------------------
+// 1. DATA SOURCE (CSV)
+// ---------------------------------------------
+Table data_source {
+  source_id integer [pk, increment]
+  source_name varchar
+  source_type varchar
+  file_path varchar
+  rows_count integer
+}
+
+// ---------------------------------------------
+// 2. EXTRACT STAGE (Airflow - extract.py)
+// ---------------------------------------------
+Table extract_stage {
+  stage_id integer [pk, increment]
+  source_id integer [not null]
+  status varchar
+  rows_extracted integer
+  extraction_time timestamp
+}
+
+// ---------------------------------------------
+// 3. TRANSFORM STAGE (Airflow - transform.py)
+// ---------------------------------------------
+Table transform_stage {
+  stage_id integer [pk, increment]
+  extract_id integer [not null]
+  status varchar
+  datetime_dim_rows integer
+  rate_code_dim_rows integer
+  location_dim_rows integer
+  fact_table_rows integer
+  transformation_time timestamp
+}
+
+// ---------------------------------------------
+// 4. LOAD STAGE (Airflow - load.py)
+// ---------------------------------------------
+Table load_stage {
+  stage_id integer [pk, increment]
+  transform_id integer [not null]
+  status varchar
+  database_path varchar
+  table_count integer
+  load_time timestamp
+}
+
+// ---------------------------------------------
+// 5. VISUALIZATION STAGE (Streamlit Dashboard)
+// ---------------------------------------------
+Table dashboard_stage {
+  stage_id integer [pk, increment]
+  load_id integer [not null]
+  status varchar
+  dashboard_url varchar
+  chart_count integer
+  generated_at timestamp
+}
+
+// =============================================
+// PIPELINE FLOW - ALL CONNECTED
+// =============================================
+
+// data_source → extract_stage
+Ref: data_source.source_id < extract_stage.source_id
+
+// extract_stage → transform_stage
+Ref: extract_stage.stage_id < transform_stage.extract_id
+
+// transform_stage → load_stage
+Ref: transform_stage.stage_id < load_stage.transform_id
+
+// load_stage → dashboard_stage
+Ref: load_stage.stage_id < dashboard_stage.load_id

@@ -1,4 +1,5 @@
-# 🚖 Uber ETL Pipeline Project
+```markdown
+# Uber ETL Pipeline Project
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-2.7.3-blue.svg)](https://airflow.apache.org/)
@@ -9,41 +10,41 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [Project Overview](#-project-overview)
-- [Why This Project](#-why-this-project)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [Star Schema Design](#-star-schema-design)
-- [Pipeline Phases](#-pipeline-phases)
-- [Project Structure](#-project-structure)
-- [Prerequisites](#-prerequisites)
-- [Quick Start](#-quick-start)
-- [Running the Pipeline](#-running-the-pipeline)
-- [Dashboard Preview](#-dashboard-preview)
-- [Business Questions Answered](#-business-questions-answered)
-- [Verification & Testing](#-verification--testing)
-- [Screenshots](#-screenshots)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Contact](#-contact)
+- [Project Overview](#project-overview)
+- [Why This Project](#why-this-project)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Star Schema Design](#star-schema-design)
+- [Pipeline Phases](#pipeline-phases)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Running the Pipeline](#running-the-pipeline)
+- [Dashboard Preview](#dashboard-preview)
+- [Business Questions Answered](#business-questions-answered)
+- [Verification & Testing](#verification--testing)
+- [Screenshots](#screenshots)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 This project implements an **end-to-end data pipeline** for analyzing NYC Uber/Taxi trip data using **industry-standard open-source tools** that data engineers use in production environments.
 
 ### Key Features
 
-- ✅ **Orchestration** with **Apache Airflow** (industry standard)
-- ✅ **Star Schema Data Warehouse** in DuckDB (4 tables)
-- ✅ **Interactive Dashboard** with Streamlit + Plotly
-- ✅ **Containerized Setup** with Docker for easy deployment
-- ✅ **Automated Scheduling** with Airflow DAGs
-- ✅ **Comprehensive Documentation** with 30+ screenshots
+- Orchestration with **Apache Airflow** (industry standard)
+- **Star Schema Data Warehouse** in DuckDB (4 tables)
+- **Interactive Dashboard** with Streamlit + Plotly
+- **Containerized Setup** with Docker for easy deployment
+- **Automated Scheduling** with Airflow DAGs
+- **Comprehensive Documentation** with 33 screenshots
 
 ### Business Questions Addressed
 
@@ -56,7 +57,7 @@ This project implements an **end-to-end data pipeline** for analyzing NYC Uber/T
 
 ---
 
-## 💡 Why This Project
+## Why This Project
 
 ### The Problem This Project Solves
 
@@ -66,58 +67,30 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 
 | Aspect | Airflow | Why It Matters |
 |--------|---------|----------------|
-| **Industry Standard** | ⭐⭐⭐⭐⭐ | Most used orchestration tool globally |
-| **Job Market** | ⭐⭐⭐⭐⭐ | Required skill for 80%+ DE jobs |
-| **Community** | ⭐⭐⭐⭐⭐ | Largest community, endless resources |
-| **Production Ready** | ⭐⭐⭐⭐⭐ | Used by thousands of companies |
-| **Scalability** | ⭐⭐⭐⭐⭐ | From small to enterprise scale |
+| Industry Standard | 5/5 | Most used orchestration tool globally |
+| Job Market | 5/5 | Required skill for 80%+ DE jobs |
+| Community | 5/5 | Largest community, endless resources |
+| Production Ready | 5/5 | Used by thousands of companies |
+| Scalability | 5/5 | From small to enterprise scale |
 
 ### Tools Comparison
 
 | Tool | Popularity | Used In Companies | Portfolio Value |
 |------|------------|-------------------|-----------------|
-| **Apache Airflow** | ⭐⭐⭐⭐⭐ | ✅ Most companies | ⭐⭐⭐⭐⭐ |
-| **Dagster** | ⭐⭐⭐⭐ | ✅ Growing | ⭐⭐⭐⭐ |
-| **Prefect** | ⭐⭐⭐⭐ | ✅ Growing | ⭐⭐⭐⭐ |
-| **Mage AI** | ⭐⭐ | ❌ Limited | ⭐⭐ |
+| Apache Airflow | 5/5 | Most companies | 5/5 |
+| Dagster | 4/5 | Growing | 4/5 |
+| Prefect | 4/5 | Growing | 4/5 |
+| Mage AI | 2/5 | Limited | 2/5 |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### Pipeline Flow Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      UBER ETL PIPELINE (Apache Airflow)                    │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                        APACHE AIRFLOW DAG                          │   │
-│  │                                                                     │   │
-│  │  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐           │   │
-│  │  │   EXTRACT    │   │  TRANSFORM   │   │    LOAD      │           │   │
-│  │  │              │   │              │   │              │           │   │
-│  │  │ extract_data │──▶│transform_data│──▶│  load_data   │           │   │
-│  │  │  (Python)    │   │  (Python)    │   │  (Python)    │           │   │
-│  │  └──────────────┘   └──────────────┘   └──────────────┘           │   │
-│  │         │                  │                  │                    │   │
-│  └─────────│──────────────────│──────────────────│────────────────────┘   │
-│            │                  │                  │                        │
-│            ▼                  ▼                  ▼                        │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐                 │
-│  │  Raw CSV     │   │ Star Schema  │   │   DuckDB     │                 │
-│  │  Dataset     │   │  (4 Tables)  │   │  Warehouse   │                 │
-│  └──────────────┘   └──────────────┘   └──────────────┘                 │
-│                                                      │                    │
-│                                                      ▼                    │
-│                                             ┌──────────────┐             │
-│                                             │  Streamlit   │             │
-│                                             │  Dashboard   │             │
-│                                             └──────────────┘             │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+![Pipeline Flow Diagram](screenshots/32-pipeline-flow-diagram.png)
+
+*Diagram showing the complete ETL pipeline flow from data extraction to dashboard visualization.*
 
 ### Data Flow Summary
 
@@ -128,59 +101,27 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component | Technology | Version | Purpose |
 |-----------|-----------|---------|---------|
-| **Orchestration** | Apache Airflow | 2.7.3 | Workflow scheduling & orchestration |
-| **Data Warehouse** | DuckDB | 0.9.2 | In-process OLAP database |
-| **Dashboard** | Streamlit | 1.29.0 | Interactive web application |
-| **Visualization** | Plotly | 5.18.0 | Interactive charting |
-| **Data Processing** | Pandas | 2.1.4 | Data manipulation |
-| **Container** | Docker | Latest | Easy deployment |
-| **Language** | Python | 3.10+ | Primary programming language |
+| Orchestration | Apache Airflow | 2.7.3 | Workflow scheduling & orchestration |
+| Data Warehouse | DuckDB | 0.9.2 | In-process OLAP database |
+| Dashboard | Streamlit | 1.29.0 | Interactive web application |
+| Visualization | Plotly | 5.18.0 | Interactive charting |
+| Data Processing | Pandas | 2.1.4 | Data manipulation |
+| Container | Docker | Latest | Easy deployment |
+| Language | Python | 3.10+ | Primary programming language |
 
 ---
 
-## 📊 Star Schema Design
+## Star Schema Design
 
 ### Entity-Relationship Diagram
 
-```
-┌─────────────────────┐          ┌─────────────────────────┐
-│    datetime_dim     │          │     rate_code_dim       │
-├─────────────────────┤          ├─────────────────────────┤
-│ datetime_id (PK)    │◄─────┐   │ rate_code_id (PK)       │◄─────┐
-│ pickup_datetime     │      │   │ RatecodeID              │      │
-│ pick_hour           │      │   │ rate_code_name          │      │
-│ pick_day            │      │   └─────────────────────────┘      │
-│ pick_month          │      │                                     │
-│ pick_year           │      │                                     │
-│ pick_weekday        │      │                                     │
-└─────────────────────┘      │                                     │
-                              │    ┌──────────────────────────────┐│
-                              └────┤        fact_table            ││
-                                   ├──────────────────────────────┤│
-                                   │ trip_id (PK)                 ││
-                                   │ datetime_id (FK)             │─┘
-                                   │ rate_code_id (FK)            │─┐
-                                   │ pickup_location_id (FK)      │ │
-                                   │ dropoff_location_id (FK)     │ │
-                                   │ trip_distance                │ │
-                                   │ trip_duration                │ │
-                                   │ fare_amount                  │ │
-                                   │ total_amount                 │ │
-                                   │ passenger_count              │ │
-                                   │ payment_type_id              │ │
-                                   └──────────────────────────────┘ │
-                              ┌─────────────────────────┐          │
-                              │     location_dim        │          │
-                              ├─────────────────────────┤          │
-                              │ location_id (PK)        │◄─────────┘
-                              │ location_name           │
-                              │ borough                 │
-                              └─────────────────────────┘
-```
+![ERD Diagram](screenshots/33-erd-diagram.png)
+
+*Star Schema design showing fact_table and dimension tables (datetime_dim, rate_code_dim, location_dim).*
 
 ### Table Definitions
 
@@ -205,6 +146,7 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 | `rate_code_name` | VARCHAR | Human-readable rate name |
 
 **Rate Code Mapping:**
+
 | RatecodeID | Name |
 |------------|------|
 | 1 | Standard |
@@ -240,138 +182,144 @@ Many data engineering portfolios use niche tools that aren't widely adopted in t
 
 ---
 
-## 📋 Pipeline Phases
+## Pipeline Phases
 
 ### Phase 1: Setup & Environment
+
 Establish the foundation for the project.
 
-| # | Task | Detail |
-|---|------|--------|
-| 1.1 | Folder structure | Create `dags/`, `scripts/`, `data/`, `warehouse/`, `dashboard/` |
-| 1.2 | Virtual environment | `python -m venv venv` |
-| 1.3 | Requirements | Install `apache-airflow`, `duckdb`, `pandas`, `streamlit`, `plotly` |
-| 1.4 | Dataset | Download `uber_data.csv` to `data/` |
-| 1.5 | Verification | `python verify-phase-1.py` |
+| Task | Detail |
+|------|--------|
+| 1.1 | Folder structure: `dags/`, `scripts/`, `data/`, `warehouse/`, `dashboard/` |
+| 1.2 | Virtual environment: `python -m venv venv` |
+| 1.3 | Requirements: `apache-airflow`, `duckdb`, `pandas`, `streamlit`, `plotly` |
+| 1.4 | Dataset: Download `uber_data.csv` to `data/` |
+| 1.5 | Verification: `python verify-phase-1.py` |
 
 ### Phase 2: Airflow DAG Creation
+
 Create the Airflow DAG for orchestration.
 
-| # | Task | Detail |
-|---|------|--------|
-| 2.1 | Start Airflow | `docker-compose up -d` |
-| 2.2 | Create DAG | `uber_etl_dag.py` in `dags/` folder |
-| 2.3 | Create extract task | `scripts/extract.py` |
-| 2.4 | Create transform task | `scripts/transform.py` |
-| 2.5 | Create load task | `scripts/load.py` |
-| 2.6 | Verification | `python verify-phase-2.py` |
+| Task | Detail |
+|------|--------|
+| 2.1 | Start Airflow: `docker-compose up -d` |
+| 2.2 | Create DAG: `uber_etl_dag.py` in `dags/` folder |
+| 2.3 | Create extract task: `scripts/extract.py` |
+| 2.4 | Create transform task: `scripts/transform.py` |
+| 2.5 | Create load task: `scripts/load.py` |
+| 2.6 | Verification: `python verify-phase-2.py` |
 
 ### Phase 3: Data Transformation
+
 Build the Star Schema.
 
-| # | Task | Detail |
-|---|------|--------|
-| 3.1 | Data cleaning | `drop_duplicates()`, `dropna()`, `reset_index()` |
-| 3.2 | Build `datetime_dim` | Extract temporal components |
-| 3.3 | Build `rate_code_dim` | Map rate codes to names |
-| 3.4 | Build `location_dim` | Create unique locations |
-| 3.5 | Build `fact_table` | Combine all dimensions |
-| 3.6 | Verification | `python verify-phase-3.py` |
+| Task | Detail |
+|------|--------|
+| 3.1 | Data cleaning: `drop_duplicates()`, `dropna()`, `reset_index()` |
+| 3.2 | Build `datetime_dim`: Extract temporal components |
+| 3.3 | Build `rate_code_dim`: Map rate codes to names |
+| 3.4 | Build `location_dim`: Create unique locations |
+| 3.5 | Build `fact_table`: Combine all dimensions |
+| 3.6 | Verification: `python verify-phase-3.py` |
 
 ### Phase 4: Data Loading to DuckDB
+
 Store transformed data in DuckDB.
 
-| # | Task | Detail |
-|---|------|--------|
-| 4.1 | Connect to DuckDB | `duckdb.connect('warehouse/uber.duckdb')` |
-| 4.2 | Create tables | `DROP TABLE IF EXISTS`, `CREATE TABLE` |
-| 4.3 | Insert data | Load transformed data |
-| 4.4 | Create view | `trip_analytics` for dashboard |
-| 4.5 | Verification | `python verify-phase-4.py` |
+| Task | Detail |
+|------|--------|
+| 4.1 | Connect to DuckDB: `duckdb.connect('warehouse/uber.duckdb')` |
+| 4.2 | Create tables: `DROP TABLE IF EXISTS`, `CREATE TABLE` |
+| 4.3 | Insert data: Load transformed data |
+| 4.4 | Create view: `trip_analytics` for dashboard |
+| 4.5 | Verification: `python verify-phase-4.py` |
 
 ### Phase 5: Dashboard Development
+
 Build an interactive visualization dashboard.
 
-| # | Task | Detail |
-|---|------|--------|
-| 5.1 | Create `dashboard/app.py` | Streamlit application |
-| 5.2 | KPI Cards | Total Trips, Revenue, Avg Distance, Avg Fare |
-| 5.3 | Line Chart | Revenue per Hour |
-| 5.4 | Bar Chart | Trips by Weekday |
-| 5.5 | Pie Chart | Rate Code Distribution |
-| 5.6 | Scatter Plot | Distance vs Fare |
-| 5.7 | Sidebar filters | Year, Month, Weekday |
-| 5.8 | Run dashboard | `streamlit run dashboard/app.py` |
-| 5.9 | Verification | `python verify-phase-5.py` |
+| Task | Detail |
+|------|--------|
+| 5.1 | Create `dashboard/app.py`: Streamlit application |
+| 5.2 | KPI Cards: Total Trips, Revenue, Avg Distance, Avg Fare |
+| 5.3 | Line Chart: Revenue per Hour |
+| 5.4 | Bar Chart: Trips by Weekday |
+| 5.5 | Pie Chart: Rate Code Distribution |
+| 5.6 | Scatter Plot: Distance vs Fare |
+| 5.7 | Sidebar filters: Year, Month, Weekday |
+| 5.8 | Run dashboard: `streamlit run dashboard/app.py` |
+| 5.9 | Verification: `python verify-phase-5.py` |
 
 ### Phase 6: Deployment & Documentation
+
 Finalize the project.
 
-| # | Task | Detail |
-|---|------|--------|
-| 6.1 | README.md | Comprehensive project documentation |
-| 6.2 | Screenshots | 30+ screenshots in `screenshots/` |
-| 6.3 | Git init | `git init` |
-| 6.4 | GitHub repo | Create public repository |
-| 6.5 | Push | `git push origin main` |
-| 6.6 | Verification | `python verify-phase-6.py` |
+| Task | Detail |
+|------|--------|
+| 6.1 | README.md: Comprehensive project documentation |
+| 6.2 | Screenshots: 33 screenshots in `screenshots/` |
+| 6.3 | Git init: `git init` |
+| 6.4 | GitHub repo: Create public repository |
+| 6.5 | Push: `git push origin main` |
+| 6.6 | Verification: `python verify-phase-6.py` |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 uber-data-pipeline/
 │
-├── 📁 dags/
+├── dags/
 │   └── uber_etl_dag.py              # Airflow DAG definition
 │
-├── 📁 scripts/
+├── scripts/
 │   ├── extract.py                   # Extract data from CSV
 │   ├── transform.py                 # Transform to Star Schema
 │   └── load.py                      # Load to DuckDB
 │
-├── 📁 data/
+├── data/
 │   └── uber_data.csv                # Raw NYC Uber/Taxi dataset
 │
-├── 📁 warehouse/
+├── warehouse/
 │   └── uber.duckdb                  # DuckDB database file
 │
-├── 📁 dashboard/
+├── dashboard/
 │   └── app.py                       # Streamlit dashboard
 │
-├── 📁 screenshots/
-│   └── (30+ verification screenshots)
+├── screenshots/
+│   └── (33 verification screenshots)
 │
-├── 📄 docker-compose.yml            # Airflow with Docker
-├── 📄 verify-phase-1.py             # Phase 1: Setup Verification
-├── 📄 verify-phase-2.py             # Phase 2: DAG Verification
-├── 📄 verify-phase-3.py             # Phase 3: Transform Verification
-├── 📄 verify-phase-4.py             # Phase 4: Load Verification
-├── 📄 verify-phase-5.py             # Phase 5: Dashboard Verification
-├── 📄 verify-phase-6.py             # Phase 6: Deployment Verification
+├── docker-compose.yml               # Airflow with Docker
+├── verify-phase-1.py                # Phase 1: Setup Verification
+├── verify-phase-2.py                # Phase 2: DAG Verification
+├── verify-phase-3.py                # Phase 3: Transform Verification
+├── verify-phase-4.py                # Phase 4: Load Verification
+├── verify-phase-5.py                # Phase 5: Dashboard Verification
+├── verify-phase-6.py                # Phase 6: Deployment Verification
 │
-├── 📄 requirements.txt              # Python dependencies
-├── 📄 .gitignore                    # Git ignore file
-├── 📄 LICENSE                       # MIT License
-└── 📄 README.md                     # Documentation (this file)
+├── requirements.txt                 # Python dependencies
+├── .gitignore                       # Git ignore file
+├── LICENSE                          # MIT License
+└── README.md                        # Documentation (this file)
 ```
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
 | Software | Version | Check Command | Download |
 |----------|---------|---------------|----------|
-| **Python** | 3.10+ | `python --version` | [python.org](https://python.org) |
-| **Docker** | Latest | `docker --version` | [docker.com](https://docker.com) |
-| **Docker Compose** | Latest | `docker-compose --version` | [docker.com](https://docker.com) |
-| **Git** | Latest | `git --version` | [git-scm.com](https://git-scm.com) |
+| Python | 3.10+ | `python --version` | [python.org](https://python.org) |
+| Docker | Latest | `docker --version` | [docker.com](https://docker.com) |
+| Docker Compose | Latest | `docker-compose --version` | [docker.com](https://docker.com) |
+| Git | Latest | `git --version` | [git-scm.com](https://git-scm.com) |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option 1: Docker (Recommended)
 
@@ -382,7 +330,8 @@ cd uber-data-pipeline
 
 # 2. Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate          # On Windows: venv\Scripts\activate
+venv\Scripts\activate          # On Windows
+source venv/bin/activate       # On Mac/Linux
 
 # 3. Install dependencies
 pip install --upgrade pip
@@ -440,13 +389,13 @@ streamlit run dashboard/app.py
 
 ---
 
-## 🏃 Running the Pipeline
+## Running the Pipeline
 
 ### Trigger DAG from Airflow UI
 
 1. Open Airflow UI: http://localhost:8080
 2. Find DAG: `uber_etl_pipeline`
-3. Click the **play button** (▶) to trigger
+3. Click the play button to trigger
 4. Monitor the DAG run status
 
 ### Trigger DAG from CLI
@@ -462,16 +411,17 @@ airflow dags list-runs --dag-id uber_etl_pipeline
 ### Monitor DAG Run
 
 1. In Airflow UI, click on DAG name
-2. View the **Grid View** for task status
-3. All tasks should show **green** (success)
+2. View the Grid View for task status
+3. All tasks should show green (success)
 
 ---
 
-## 📊 Dashboard Preview
+## Dashboard Preview
 
 The Streamlit dashboard provides the following visualizations:
 
 ### Key Performance Indicators (KPIs)
+
 - **Total Trips**: Count of all trips
 - **Total Revenue**: Sum of all fares
 - **Average Distance**: Mean trip distance
@@ -481,21 +431,23 @@ The Streamlit dashboard provides the following visualizations:
 
 | Chart | Type | Description |
 |-------|------|-------------|
-| **Revenue by Hour** | Line Chart | Shows hourly revenue patterns |
-| **Trips by Weekday** | Bar Chart | Identifies peak days |
-| **Rate Code Distribution** | Pie Chart | Most common rate codes |
-| **Distance vs Fare** | Scatter Plot | Correlation analysis |
+| Revenue by Hour | Line Chart | Shows hourly revenue patterns |
+| Trips by Weekday | Bar Chart | Identifies peak days |
+| Rate Code Distribution | Pie Chart | Most common rate codes |
+| Distance vs Fare | Scatter Plot | Correlation analysis |
 
 ### Filters
+
 - **Year**: Filter by year
 - **Month**: Filter by month
 - **Weekday**: Filter by day of week
 
 ---
 
-## ❓ Business Questions Answered
+## Business Questions Answered
 
 ### 1. When is demand highest?
+
 ```sql
 SELECT pick_hour, COUNT(*) as trip_count
 FROM fact_table f
@@ -505,6 +457,7 @@ ORDER BY trip_count DESC;
 ```
 
 ### 2. How does revenue vary by day?
+
 ```sql
 SELECT pick_weekday, SUM(total_amount) as revenue
 FROM fact_table f
@@ -514,6 +467,7 @@ ORDER BY revenue DESC;
 ```
 
 ### 3. Which rate codes are most common?
+
 ```sql
 SELECT rate_code_name, COUNT(*) as count
 FROM fact_table f
@@ -523,6 +477,7 @@ ORDER BY count DESC;
 ```
 
 ### 4. What are average trip metrics?
+
 ```sql
 SELECT 
     AVG(trip_distance) as avg_distance,
@@ -533,18 +488,18 @@ FROM fact_table;
 
 ---
 
-## ✅ Verification & Testing
+## Verification & Testing
 
 ### Verification Summary
 
-| Phase | Script | Focus | Verification |
-|-------|--------|-------|--------------|
-| **1** | `verify-phase-1.py` | Setup & Environment | ✅ |
-| **2** | `verify-phase-2.py` | Airflow DAG | ✅ |
-| **3** | `verify-phase-3.py` | Transform (Star Schema) | ✅ |
-| **4** | `verify-phase-4.py` | Load to DuckDB | ✅ |
-| **5** | `verify-phase-5.py` | Dashboard | ✅ |
-| **6** | `verify-phase-6.py` | Deployment | ✅ |
+| Phase | Script | Focus |
+|-------|--------|-------|
+| 1 | `verify-phase-1.py` | Setup & Environment |
+| 2 | `verify-phase-2.py` | Airflow DAG |
+| 3 | `verify-phase-3.py` | Transform (Star Schema) |
+| 4 | `verify-phase-4.py` | Load to DuckDB |
+| 5 | `verify-phase-5.py` | Dashboard |
+| 6 | `verify-phase-6.py` | Deployment |
 
 ### Run All Verifications
 
@@ -561,7 +516,14 @@ python run_all_verifications.py
 
 ---
 
-## 📸 Screenshots
+## Screenshots
+
+### Architecture Diagrams
+
+| Screenshot | Description |
+|------------|-------------|
+| ![Pipeline Flow Diagram](screenshots/32-pipeline-flow-diagram.png) | ETL Pipeline flow diagram showing the complete data flow from CSV to Dashboard |
+| ![ERD Diagram](screenshots/33-erd-diagram.png) | Star Schema ERD diagram showing fact_table and dimension tables relationships |
 
 ### Phase 0: Repository & Setup
 
@@ -578,7 +540,7 @@ python run_all_verifications.py
 | ![Dataset Downloaded](screenshots/04-dataset-downloaded.png) | Dataset in data/ folder |
 | ![Phase 1 Verification](screenshots/05-verify-phase1-success.png) | Phase 1 verification passed (100%) |
 
-### Phase 2: Data Extraction
+### Phase 2: Airflow DAG
 
 | Screenshot | Description |
 |------------|-------------|
@@ -631,7 +593,7 @@ python run_all_verifications.py
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues and Solutions
 
@@ -654,7 +616,7 @@ python run_all_verifications.py
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome!
 
@@ -673,13 +635,13 @@ Contributions are welcome!
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📞 Contact
+## Contact
 
 - **Project Maintainer**: Arkan Tsabit
 - **Email**: aarkantsabit@gmail.com
@@ -687,7 +649,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **Apache Airflow** for industry-standard orchestration
 - **DuckDB** for lightweight OLAP database
@@ -696,27 +658,30 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-## 📝 Changelog
+## Changelog
 
 ### v2.0.0 (2026-07-10)
-- 🔄 **Migration**: Mage AI → Apache Airflow
-- 📦 **Added**: Docker Compose setup
-- 📂 **Added**: DAG-based orchestration
-- 📝 **Updated**: All documentation for Airflow
-- ✅ **Maintained**: 6-phase verification system
+
+- Migration: Mage AI to Apache Airflow
+- Added: Docker Compose setup
+- Added: DAG-based orchestration
+- Updated: All documentation for Airflow
+- Maintained: 6-phase verification system
 
 ### v1.0.0 (2026-07-08)
-- 🎉 Initial release with Mage AI
-- 📊 Star schema in DuckDB
-- 📈 Streamlit dashboard
-- ✅ 115+ verification checks
+
+- Initial release with Mage AI
+- Star schema in DuckDB
+- Streamlit dashboard
+- 115+ verification checks
 
 ---
 
-## ⭐ Star History
+## Star History
 
-If you find this project useful, please give it a ⭐ on GitHub!
+If you find this project useful, please give it a star on GitHub!
 
 ---
 
-**Built with ❤️ using industry-standard data engineering tools**
+**Built with industry-standard data engineering tools**
+```

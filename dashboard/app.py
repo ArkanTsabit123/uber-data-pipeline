@@ -1,124 +1,119 @@
 # dashboard/app.py
-# Streamlit dashboard for Uber NYC Trip Analytics
-
 """
-Uber NYC Trip Analytics Dashboard
-Interactive dashboard for analyzing NYC Uber/Taxi trip data.
+Uber NYC Trip Analytics Dashboard.
+
+Interactive dashboard for analyzing NYC Uber/Taxi trip data using
+Streamlit, DuckDB, and Plotly visualizations.
 """
 
+import os
 import streamlit as st
 import duckdb
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
-import os
-import sys
+
 
 # ============================================
 # Page Configuration
 # ============================================
+
 st.set_page_config(
     page_title="Uber NYC Dashboard",
-    page_icon="🚖",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ============================================
-# Title and Description
-# ============================================
-st.title("🚖 Uber NYC Trip Analytics Dashboard")
-st.markdown("*End-to-End Data Pipeline with Apache Airflow*")
-st.markdown("---")
 
 # ============================================
-# Database Connection - FIXED with absolute path
+# Database Connection
 # ============================================
+
 @st.cache_resource
 def get_connection():
-    """Get DuckDB connection"""
+    """
+    Get DuckDB connection to the warehouse database.
+
+    Returns:
+        duckdb.DuckDBPyConnection or None: Database connection
+    """
     try:
-        # Get absolute path from current file location
         current_dir = os.path.dirname(os.path.abspath(__file__))
         root_dir = os.path.dirname(current_dir)
         db_path = os.path.join(root_dir, 'warehouse', 'uber.duckdb')
-        
-        # Debug info (will show in dashboard)
-        st.write(f"📂 Database path: `{db_path}`")
-        st.write(f"✅ File exists: `{os.path.exists(db_path)}`")
-        
+
         if not os.path.exists(db_path):
-            st.error("❌ Database file not found!")
+            st.error("Database file not found! Please run the pipeline first.")
             return None
-        
+
         return duckdb.connect(db_path)
+
     except Exception as e:
-        st.error(f"❌ Database connection failed: {e}")
+        st.error(f"Database connection failed: {e}")
         return None
+
 
 @st.cache_data
 def load_data():
-    """Load data from DuckDB"""
+    """
+    Load data from the trip_analytics view.
+
+    Returns:
+        pd.DataFrame: Trip analytics data
+    """
     conn = get_connection()
+
     if conn is None:
         return pd.DataFrame()
-    
+
     try:
         df = conn.execute("SELECT * FROM trip_analytics").fetchdf()
         conn.close()
         return df
+
     except Exception as e:
         conn.close()
-        st.error(f"❌ Error loading data: {e}")
+        st.error(f"Error loading data: {e}")
         return pd.DataFrame()
+
+
+# ============================================
+# Title and Description
+# ============================================
+
+st.title("Uber NYC Trip Analytics Dashboard")
+st.markdown("*End-to-End Data Pipeline with Apache Airflow*")
+st.markdown("---")
+
 
 # ============================================
 # Load Data
 # ============================================
+
 df = load_data()
 
-# ============================================
-# Debug Info (Remove after successful)
-# ============================================
-st.write("### 🔍 Debug Info")
 if df.empty:
-    st.warning("DataFrame is EMPTY")
-    st.write(f"DataFrame shape: {df.shape}")
-else:
-    st.success(f"✅ DataFrame loaded: {df.shape[0]:,} rows, {df.shape[1]} columns")
-    st.write(f"📋 Columns: {df.columns.tolist()}")
-    st.write(f"📅 Years: {sorted(df['pick_year'].unique())}")
-    st.write(f"📅 Months: {sorted(df['pick_month'].unique())}")
-    st.write(f"📅 Weekdays: {df['pick_weekday'].unique().tolist()}")
-
-st.markdown("---")
-
-# ============================================
-# Show Warning if No Data
-# ============================================
-if df.empty:
-    st.warning("⚠️ No data found. Please run the Airflow pipeline first!")
+    st.warning("No data found. Please run the Airflow pipeline first!")
     st.info("1. Open Airflow UI: http://localhost:8080")
     st.info("2. Trigger DAG: `uber_etl_pipeline`")
     st.info("3. Refresh this dashboard")
     st.stop()
 
+
 # ============================================
 # Sidebar Filters
 # ============================================
-st.sidebar.header("🔍 Filters")
 
-# Get unique values for filters
+st.sidebar.header("Filters")
+
 year_options = sorted(df['pick_year'].unique()) if 'pick_year' in df.columns else []
 month_options = sorted(df['pick_month'].unique()) if 'pick_month' in df.columns else []
 weekday_options = df['pick_weekday'].unique().tolist() if 'pick_weekday' in df.columns else []
 
-# Filter widgets
-year = st.sidebar.selectbox("📅 Year", year_options) if year_options else None
-month = st.sidebar.selectbox("📅 Month", month_options) if month_options else None
-weekday = st.sidebar.multiselect("📅 Weekday", weekday_options) if weekday_options else []
+year = st.sidebar.selectbox("Year", year_options) if year_options else None
+month = st.sidebar.selectbox("Month", month_options) if month_options else None
+weekday = st.sidebar.multiselect("Weekday", weekday_options) if weekday_options else []
 
-# Apply filters
 filtered_df = df.copy()
 
 if year:
@@ -128,55 +123,59 @@ if month:
 if weekday:
     filtered_df = filtered_df[filtered_df['pick_weekday'].isin(weekday)]
 
+
 # ============================================
 # KPI Cards
 # ============================================
+
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
-        "🚗 Total Trips",
+        "Total Trips",
         f"{len(filtered_df):,}",
         help="Total number of trips"
     )
 
 with col2:
     st.metric(
-        "💰 Total Revenue",
+        "Total Revenue",
         f"${filtered_df['total_amount'].sum():,.2f}",
         help="Total revenue from all trips"
     )
 
 with col3:
     st.metric(
-        "📏 Avg Distance",
+        "Avg Distance",
         f"{filtered_df['trip_distance'].mean():.2f} miles",
         help="Average trip distance"
     )
 
 with col4:
     st.metric(
-        "💵 Avg Fare",
+        "Avg Fare",
         f"${filtered_df['fare_amount'].mean():.2f}",
         help="Average fare per trip"
     )
 
 st.markdown("---")
 
+
 # ============================================
-# Charts - Row 1
+# Row 1: Revenue by Hour and Trips by Weekday
 # ============================================
+
 col1, col2 = st.columns(2)
 
-# Chart 1: Revenue by Hour
 with col1:
     if 'pick_hour' in filtered_df.columns:
         hourly_revenue = filtered_df.groupby('pick_hour')['total_amount'].sum().reset_index()
+
         fig1 = px.line(
             hourly_revenue,
             x='pick_hour',
             y='total_amount',
-            title='💰 Revenue by Hour',
+            title='Revenue by Hour',
             markers=True,
             color_discrete_sequence=['#1f77b4']
         )
@@ -187,22 +186,24 @@ with col1:
         )
         st.plotly_chart(fig1, use_container_width=True)
 
-# Chart 2: Trips by Weekday
 with col2:
     if 'pick_weekday' in filtered_df.columns:
         weekday_trips = filtered_df['pick_weekday'].value_counts().reset_index()
         weekday_trips.columns = ['weekday', 'count']
-        
-        # Order weekdays correctly
+
         weekday_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-        weekday_trips['weekday'] = pd.Categorical(weekday_trips['weekday'], categories=weekday_order, ordered=True)
+        weekday_trips['weekday'] = pd.Categorical(
+            weekday_trips['weekday'],
+            categories=weekday_order,
+            ordered=True
+        )
         weekday_trips = weekday_trips.sort_values('weekday')
-        
+
         fig2 = px.bar(
             weekday_trips,
             x='weekday',
             y='count',
-            title='📊 Trips by Weekday',
+            title='Trips by Weekday',
             color='count',
             color_continuous_scale='Blues'
         )
@@ -213,35 +214,36 @@ with col2:
         )
         st.plotly_chart(fig2, use_container_width=True)
 
+
 # ============================================
-# Charts - Row 2
+# Row 2: Rate Code Distribution and Distance vs Fare
 # ============================================
+
 col3, col4 = st.columns(2)
 
-# Chart 3: Rate Code Distribution
 with col3:
     if 'rate_code_name' in filtered_df.columns:
         rate_dist = filtered_df['rate_code_name'].value_counts().reset_index()
         rate_dist.columns = ['rate_code', 'count']
+
         fig3 = px.pie(
             rate_dist,
             values='count',
             names='rate_code',
-            title='🏷️ Rate Code Distribution',
+            title='Rate Code Distribution',
             hole=0.4,
             color_discrete_sequence=px.colors.qualitative.Set3
         )
         fig3.update_traces(textposition='inside', textinfo='percent+label')
         st.plotly_chart(fig3, use_container_width=True)
 
-# Chart 4: Distance vs Fare
 with col4:
     if 'trip_distance' in filtered_df.columns and 'fare_amount' in filtered_df.columns:
         fig4 = px.scatter(
             filtered_df,
             x='trip_distance',
             y='fare_amount',
-            title='📈 Distance vs Fare',
+            title='Distance vs Fare',
             opacity=0.5,
             color='passenger_count',
             color_continuous_scale='Viridis',
@@ -251,17 +253,17 @@ with col4:
                 'passenger_count': 'Passenger Count'
             }
         )
-        fig4.update_layout(
-            hovermode='closest'
-        )
+        fig4.update_layout(hovermode='closest')
         st.plotly_chart(fig4, use_container_width=True)
 
 st.markdown("---")
 
+
 # ============================================
-# Data Table
+# Data Table and Download
 # ============================================
-with st.expander("📊 View Data Table", expanded=False):
+
+with st.expander("View Data Table", expanded=False):
     st.dataframe(
         filtered_df,
         use_container_width=True,
@@ -282,31 +284,32 @@ with st.expander("📊 View Data Table", expanded=False):
             'dropoff_location': 'Dropoff Location'
         }
     )
-    
-    # Download button
+
     csv = filtered_df.to_csv(index=False)
     st.download_button(
-        label="📥 Download CSV",
+        label="Download CSV",
         data=csv,
         file_name="uber_trip_data.csv",
         mime="text/csv",
         use_container_width=True
     )
 
+
 # ============================================
 # Footer
 # ============================================
+
 st.markdown("---")
 st.markdown(
     """
     <div style='text-align: center; color: #666;'>
-        Built with ❤️ using 
-        <strong>Apache Airflow</strong>, 
-        <strong>DuckDB</strong>, 
-        <strong>Streamlit</strong>, and 
+        Built with
+        <strong>Apache Airflow</strong>,
+        <strong>DuckDB</strong>,
+        <strong>Streamlit</strong>, and
         <strong>Plotly</strong>
         <br>
-        <small>© 2026 Arkan Tsabit</small>
+        <small>2026 Arkan Tsabit</small>
     </div>
     """,
     unsafe_allow_html=True

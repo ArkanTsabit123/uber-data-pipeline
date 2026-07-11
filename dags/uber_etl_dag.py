@@ -1,9 +1,8 @@
 # dags/uber_etl_dag.py
-# Airflow DAG definition for Uber ETL Pipeline
-
 """
-Airflow DAG for Uber ETL Pipeline
-Extract, Transform, Load NYC Uber/Taxi data
+Airflow DAG for Uber ETL Pipeline.
+
+Orchestrates the Extract, Transform, Load process for NYC Uber/Taxi data.
 """
 
 from airflow import DAG
@@ -13,21 +12,27 @@ from datetime import datetime, timedelta
 import sys
 import os
 
+
 # ============================================
-# Add scripts folder to path
+# Add scripts folder to Python path
 # ============================================
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'scripts'))
+
 
 # ============================================
 # Import ETL functions
 # ============================================
+
 from extract import extract_data
 from transform import transform_data
 from load import load_data
 
+
 # ============================================
 # DAG Default Arguments
 # ============================================
+
 default_args = {
     'owner': 'Arkan Tsabit',
     'depends_on_past': False,
@@ -38,9 +43,11 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
+
 # ============================================
 # DAG Definition
 # ============================================
+
 dag = DAG(
     'uber_etl_pipeline',
     default_args=default_args,
@@ -50,9 +57,11 @@ dag = DAG(
     tags=['uber', 'etl', 'nyc', 'airflow'],
 )
 
+
 # ============================================
 # Tasks
 # ============================================
+
 start = DummyOperator(
     task_id='start',
     dag=dag,
@@ -81,9 +90,9 @@ end = DummyOperator(
     dag=dag,
 )
 
+
 # ============================================
 # Task Dependencies
 # ============================================
-start >> extract_task >> transform_task >> load_task >> end
 
-print("✅ DAG uber_etl_pipeline loaded successfully!")
+start >> extract_task >> transform_task >> load_task >> end

@@ -1,6 +1,14 @@
+# ============================================
+# DOCKER COMPOSE - UBER ETL PIPELINE
+# Apache Airflow 2.7.3 with PostgreSQL and Redis
+# ============================================
+
 version: '3.8'
 
 services:
+  # ============================================
+  # POSTGRESQL - Airflow Metadata Database
+  # ============================================
   postgres:
     image: postgres:13
     environment:
@@ -11,60 +19,161 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ============================================
+  # REDIS - Celery Broker
+  # ============================================
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # ============================================
+  # AIRFLOW WEBSERVER - UI Interface
+  # ============================================
   airflow-webserver:
     image: apache/airflow:2.7.3
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
+      # Database
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+      # Celery
       AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
       AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
-      AIRFLOW__WEBSERVER__SECRET_KEY: secret
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./scripts:/opt/airflow/scripts
-      - ./data:/opt/airflow/data
-      - ./warehouse:/opt/airflow/warehouse
-    ports:
-      - "8080:8080"
-    command: webserver
 
-  airflow-scheduler:
-    image: apache/airflow:2.7.3
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
-      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./scripts:/opt/airflow/scripts
-      - ./data:/opt/airflow/data
-      - ./warehouse:/opt/airflow/warehouse
-    command: scheduler
+      # Secret Keys
+      AIRFLOW__WEBSERVER__SECRET_KEY: 91d34120836d6cf3fa46f0e5f0c3b06a
+      AIRFLOW__API__SECRET_KEY: 91d34120836d6cf3fa46f0e5f0c3b06a
 
-  airflow-init:
-    image: apache/airflow:2.7.3
-    depends_on:
-      - postgres
-    environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      _AIRFLOW_DB_UPGRADE: "true"
+      # Webserver
+      AIRFLOW__WEBSERVER__COOKIE_SAMESITE: lax
+      AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: "true"
+      AIRFLOW__WEBSERVER__AUTHENTICATE: "false"
+
+      # Logging
+      AIRFLOW__LOGGING__REMOTE_LOGGING: "false"
+      AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: ""
+
+      # Executor
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+
+      # ============================================
+      # AUTO-INSTALL DUCKDDB (PRE-BUILT VERSION)
+      # ============================================
+      _PIP_ADDITIONAL_REQUIREMENTS: duckdb==0.9.2 pandas plotly streamlit
+
+      # User Creation
       _AIRFLOW_WWW_USER_CREATE: "true"
       _AIRFLOW_WWW_USER_USERNAME: admin
       _AIRFLOW_WWW_USER_PASSWORD: admin
     volumes:
       - ./dags:/opt/airflow/dags
-    command: version
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - ./warehouse:/opt/airflow/warehouse
+      - ./logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    command: webserver
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
+  # ============================================
+  # AIRFLOW SCHEDULER - Triggers DAGs
+  # ============================================
+  airflow-scheduler:
+    image: apache/airflow:2.7.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Database
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+
+      # Celery
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+
+      # Secret Keys
+      AIRFLOW__WEBSERVER__SECRET_KEY: 91d34120836d6cf3fa46f0e5f0c3b06a
+      AIRFLOW__API__SECRET_KEY: 91d34120836d6cf3fa46f0e5f0c3b06a
+
+      # Executor
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+
+      # Scheduler
+      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 30
+      AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 10
+
+      # Logging
+      AIRFLOW__LOGGING__REMOTE_LOGGING: "false"
+      AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: ""
+
+      # ============================================
+      # AUTO-INSTALL DUCKDDB (PRE-BUILT VERSION)
+      # ============================================
+      _PIP_ADDITIONAL_REQUIREMENTS: duckdb==0.9.2 pandas plotly streamlit
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./data:/opt/airflow/data
+      - ./warehouse:/opt/airflow/warehouse
+      - ./logs:/opt/airflow/logs
+    restart: unless-stopped
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "airflow", "jobs", "check", "--job-type", "SchedulerJob"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ============================================
+  # AIRFLOW INIT - One-time Database Setup
+  # ============================================
+  airflow-init:
+    image: apache/airflow:2.7.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: 91d34120836d6cf3fa46f0e5f0c3b06a
+      _AIRFLOW_DB_UPGRADE: "true"
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    volumes:
+      - ./dags:/opt/airflow/dags
+    command: bash -c "airflow db migrate && airflow users create --username admin --password admin --role Admin --email admin@example.com || true"
+
+# ============================================
+# VOLUMES
+# ============================================
 volumes:
   postgres_data:

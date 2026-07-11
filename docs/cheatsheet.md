@@ -1,10 +1,10 @@
-# 📚 Uber ETL Pipeline - Cheat Sheet (Apache Airflow with Docker)
+# Uber ETL Pipeline - Cheat Sheet (Apache Airflow with Docker)
 
-## 🚀 Quick Commands
+## Quick Commands
 
 ### Virtual Environment
-```bash
 
+```bash
 # One Command Start (Windows PowerShell on root files)
 venv\Scripts\activate; docker-compose up -d; docker-compose ps; start http://localhost:8080
 
@@ -29,9 +29,10 @@ rm -rf venv
 
 ---
 
-## 🐳 Docker Commands (Airflow)
+## Docker Commands (Airflow)
 
 ### Start Airflow with Docker
+
 ```bash
 # Start all services
 docker-compose up -d
@@ -72,6 +73,7 @@ docker system prune -f
 ```
 
 ### Airflow Docker URLs
+
 ```bash
 # Airflow UI
 http://localhost:8080
@@ -84,12 +86,14 @@ localhost:5432
 ```
 
 ### Airflow Docker Default Credentials
+
 ```bash
 Username: admin
 Password: admin
 ```
 
-### 🌐 Port Mapping Summary
+### Port Mapping Summary
+
 | Service | Port |
 |---------|------|
 | Airflow UI | 8080 |
@@ -99,11 +103,12 @@ Password: admin
 
 ---
 
-## ✈️ Airflow Commands (Inside Container / Linux Only)
+## Airflow Commands (Inside Container / Linux Only)
 
-⚠️ **Catatan:** Airflow tidak berjalan native di Windows. Gunakan Docker!
+**Note:** Airflow does not run natively on Windows. Use Docker!
 
-### DAG Management (Dari host)
+### DAG Management (From host)
+
 ```bash
 # Trigger a DAG
 airflow dags trigger uber_etl_pipeline
@@ -125,6 +130,7 @@ airflow dags list
 ```
 
 ### Task Management
+
 ```bash
 # List tasks in a DAG
 airflow tasks list uber_etl_pipeline
@@ -141,9 +147,10 @@ airflow tasks state uber_etl_pipeline extract_data 2026-01-01
 
 ---
 
-## 📦 Package Management
+## Package Management
 
 ### Install Dependencies
+
 ```bash
 # Install all requirements
 pip install -r requirements.txt
@@ -169,9 +176,10 @@ pip uninstall package_name
 
 ---
 
-## 🐍 Python Commands
+## Python Commands
 
 ### Verify Installation
+
 ```bash
 # Check Python version
 python --version
@@ -180,14 +188,15 @@ python --version
 airflow version
 
 # Test imports
-python -c "import airflow; print('✅ Airflow OK')"
-python -c "import duckdb; print('✅ DuckDB OK')"
-python -c "import pandas; print('✅ Pandas OK')"
-python -c "import streamlit; print('✅ Streamlit OK')"
-python -c "import plotly; print('✅ Plotly OK')"
+python -c "import airflow; print('Airflow OK')"
+python -c "import duckdb; print('DuckDB OK')"
+python -c "import pandas; print('Pandas OK')"
+python -c "import streamlit; print('Streamlit OK')"
+python -c "import plotly; print('Plotly OK')"
 ```
 
 ### Run Verification Scripts
+
 ```bash
 # Phase 1: Setup
 python verify-phase-1.py
@@ -219,9 +228,10 @@ for i in {1..6}; do python verify-phase-$i.py; done
 
 ---
 
-## 🚀 Running the Pipeline
+## Running the Pipeline
 
 ### Start Everything
+
 ```bash
 # 1. Start Airflow with Docker
 docker-compose up -d
@@ -241,6 +251,7 @@ streamlit run dashboard/app.py
 ```
 
 ### Check Pipeline Status
+
 ```bash
 # Check DAG run status
 airflow dags list-runs --dag-id uber_etl_pipeline
@@ -251,7 +262,7 @@ docker-compose logs airflow-scheduler -f
 
 ---
 
-## 🗄️ DuckDB Commands
+## DuckDB Commands
 
 ```bash
 # Connect to DuckDB
@@ -269,7 +280,7 @@ python -c "import duckdb; conn = duckdb.connect('warehouse/uber.duckdb'); print(
 
 ---
 
-## 📁 Project Structure Quick Reference
+## Project Structure Quick Reference
 
 | Folder | Content |
 |--------|---------|
@@ -283,9 +294,10 @@ python -c "import duckdb; conn = duckdb.connect('warehouse/uber.duckdb'); print(
 
 ---
 
-## 📊 Star Schema Tables
+## Star Schema Tables
 
 ### Tables
+
 ```sql
 -- 1. datetime_dim
 datetime_id (PK)
@@ -318,6 +330,7 @@ payment_type
 ```
 
 ### Sample Queries
+
 ```sql
 -- Daily revenue
 SELECT pick_weekday, SUM(total_amount) as revenue
@@ -341,7 +354,7 @@ ORDER BY pick_hour;
 
 ---
 
-## 🚀 One-Liner Setup
+## One-Liner Setup
 
 ```bash
 # Complete project setup
@@ -356,7 +369,7 @@ docker-compose down -v && rmdir /s venv && python -m venv venv && venv\Scripts\a
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Docker Issues
 
@@ -388,28 +401,28 @@ docker-compose down -v && rmdir /s venv && python -m venv venv && venv\Scripts\a
 | `DAG not found in UI` | Wait 30 seconds, restart scheduler |
 | `Port 8080 already in use` | Change port: `"8081:8080"` |
 
-### 🔄 Quick Troubleshooting Flow
+### Quick Troubleshooting Flow
 
 ```bash
-# 1. Cek status semua container
+# 1. Check status of all containers
 docker-compose ps
 
-# 2. Cek error terbaru
+# 2. Check latest errors
 docker-compose logs --tail=50
 
-# 3. Restart webserver (jika UI tidak bisa diakses)
+# 3. Restart webserver (if UI is not accessible)
 docker-compose restart airflow-webserver
 
-# 4. Restart scheduler (jika DAG tidak muncul)
+# 4. Restart scheduler (if DAG does not appear)
 docker-compose restart airflow-scheduler
 
-# 5. Full restart (jika masih bermasalah)
+# 5. Full restart (if still having issues)
 docker-compose down && docker-compose up -d
 ```
 
 ---
 
-## 📝 DAG Structure Template
+## DAG Structure Template
 
 ```python
 from airflow import DAG
@@ -446,7 +459,7 @@ task = PythonOperator(
 
 ---
 
-## 🌐 Important URLs
+## Important URLs
 
 | Service | URL |
 |---------|-----|
@@ -457,7 +470,7 @@ task = PythonOperator(
 
 ---
 
-## 📚 Documentation Links
+## Documentation Links
 
 | Resource | URL |
 |----------|-----|
@@ -470,17 +483,17 @@ task = PythonOperator(
 
 ---
 
-## 💡 Quick Tips for Windows Users
+## Quick Tips for Windows Users
 
-1. **Always use Docker** for Airflow on Windows
-2. **Always activate venv** before working with Python
-3. **Check `docker-compose ps`** to ensure all services are running
-4. **Use `docker-compose logs -f`** to monitor in real-time
-5. **DAGs are in `./dags` folder** (mounted to `/opt/airflow/dags`)
-6. **Scripts are in `./scripts` folder** (mounted to `/opt/airflow/scripts`)
-7. **Restart services** after adding new DAGs
-8. **Check ports** if services won't start (8080, 5432, 6379, 8501)
+1. Always use Docker for Airflow on Windows
+2. Always activate venv before working with Python
+3. Check `docker-compose ps` to ensure all services are running
+4. Use `docker-compose logs -f` to monitor in real-time
+5. DAGs are in `./dags` folder (mounted to `/opt/airflow/dags`)
+6. Scripts are in `./scripts` folder (mounted to `/opt/airflow/scripts`)
+7. Restart services after adding new DAGs
+8. Check ports if services won't start (8080, 5432, 6379, 8501)
 
 ---
 
-**📌 Save this cheat sheet for quick reference!** 🚀
+**Save this cheat sheet for quick reference!**
